@@ -106,6 +106,43 @@ Access API docs at: http://localhost:8000/docs
 | GET | `/access/check` | F6 | Check access |
 | GET | `/users/me` | F6 | Get current user |
 
+## 🌐 Web Frontend
+
+A comprehensive, production-ready web frontend with all 6 Phase 1 features.
+
+**Location:** [`frontend/index.html`](frontend/index.html)
+
+### Features
+
+| Feature | Description | Status |
+|---------|-------------|--------|
+| 📚 Chapters | Rich chapter cards with metadata, markdown rendering | ✅ |
+| 📊 Progress | Dashboard with stats, streaks, progress bars | ✅ |
+| 📝 Quiz | Interactive quiz with instant feedback | ✅ |
+| 🔍 Search | Full-text search across content | ✅ |
+| 🎨 UI | Responsive design, modern gradient theme | ✅ |
+| 🔒 Freemium | Visual locked chapters, upgrade prompts | ✅ |
+
+### Quick Start
+
+```bash
+cd frontend
+python -m http.server 3000
+# Open http://localhost:3000
+```
+
+### Configuration
+
+Update API settings in `index.html`:
+```javascript
+const API_URL = "http://127.0.0.1:8000";
+const API_KEY = "test_api_key_12345";
+```
+
+**Documentation:** See [`frontend/README.md`](frontend/README.md) for complete guide.
+
+---
+
 ## 🔐 Authentication
 
 All endpoints (except `/health`) require API key authentication:

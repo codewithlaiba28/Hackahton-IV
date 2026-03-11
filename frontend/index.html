@@ -1,244 +1,1075 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Companion - Phase 1 Check</title>
+    <title>Course Companion FTE - AI Agent Development</title>
     <style>
         :root {
             --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
             --bg: #f8fafc;
             --surface: #ffffff;
             --text-main: #1e293b;
             --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             color: var(--text-main);
-            margin: 0;
-            padding: 40px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
         }
 
-        .container {
-            max-width: 800px;
-            width: 100%;
-        }
-
-        h1 {
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: var(--primary);
-            text-align: center;
-            margin-bottom: 5px;
         }
 
-        .subtitle {
-            text-align: center;
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .user-badge.free { background: var(--text-muted); }
+        .user-badge.premium { background: var(--secondary); }
+        .user-badge.pro { background: linear-gradient(135deg, #667eea, #764ba2); }
+
+        /* Navigation */
+        .nav {
+            background: rgba(255,255,255,0.95);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .nav-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
             color: var(--text-muted);
-            margin-bottom: 30px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
         }
 
-        .api-key-box {
-            background-color: var(--surface);
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-            text-align: center;
-            font-family: monospace;
-            border: 1px solid #e2e8f0;
+        .nav-btn:hover {
+            color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
         }
 
-        #chapters {
+        .nav-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        /* Main Content */
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Dashboard Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            gap: 2rem;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard { grid-template-columns: 1fr; }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        /* Chapter List */
+        .chapter-list {
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 1rem;
         }
 
-        .chapter-card {
-            background-color: var(--surface);
-            padding: 20px;
+        .chapter-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1.25rem;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            border: 1px solid transparent;
+            transition: all 0.2s;
         }
 
-        .chapter-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .chapter-item:hover {
             border-color: var(--primary);
+            box-shadow: var(--shadow);
+            transform: translateY(-2px);
         }
 
-        .chapter-title {
-            font-size: 1.2rem;
+        .chapter-item.locked {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .chapter-item.locked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .chapter-number {
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .chapter-item.locked .chapter-number {
+            background: var(--text-muted);
+        }
+
+        .chapter-info {
+            flex: 1;
+        }
+
+        .chapter-name {
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 0.25rem;
         }
 
         .chapter-meta {
-            font-size: 0.9rem;
-            color: var(--text-muted);
             display: flex;
-            gap: 15px;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-muted);
         }
 
-        .badge {
-            background-color: #e0f2fe;
-            color: #0369a1;
-            padding: 2px 8px;
-            border-radius: 999px;
-            font-size: 0.8rem;
-            font-weight: 600;
+        .chapter-actions {
+            display: flex;
+            gap: 0.5rem;
         }
 
-        #content-view {
-            display: none;
-            background-color: var(--surface);
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-        }
-
-        .back-btn {
-            background-color: transparent;
-            color: var(--primary);
+        .btn {
+            padding: 0.5rem 1rem;
             border: none;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
             cursor: pointer;
-            font-weight: 600;
-            padding: 0;
-            margin-bottom: 20px;
-            font-size: 1rem;
+            transition: all 0.2s;
         }
 
-        .back-btn:hover {
-            text-decoration: underline;
+        .btn-primary {
+            background: var(--primary);
+            color: white;
         }
 
-        .error {
-            color: #ef4444;
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Progress Panel */
+        .progress-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 8px;
             text-align: center;
-            padding: 20px;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .progress-bar {
+            background: var(--border);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        /* Content Viewer */
+        .content-viewer {
+            background: var(--surface);
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .content-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-body {
+            padding: 2rem;
+            line-height: 1.8;
+        }
+
+        .content-body h1 { font-size: 2rem; margin-bottom: 1rem; color: var(--text-main); }
+        .content-body h2 { font-size: 1.5rem; margin: 1.5rem 0 0.75rem; color: var(--text-main); }
+        .content-body h3 { font-size: 1.25rem; margin: 1.25rem 0 0.5rem; color: var(--text-main); }
+        .content-body p { margin-bottom: 1rem; }
+        .content-body ul, .content-body ol { margin: 1rem 0 1rem 2rem; }
+        .content-body li { margin-bottom: 0.5rem; }
+        .content-body code {
+            background: var(--bg);
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875em;
+        }
+        .content-body pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+        .content-body pre code {
+            background: transparent;
+            color: inherit;
+        }
+
+        /* Quiz Styles */
+        .quiz-container {
+            padding: 2rem;
+        }
+
+        .quiz-question {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: var(--bg);
+            border-radius: 8px;
+        }
+
+        .quiz-question-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .quiz-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .quiz-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quiz-option:hover {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .quiz-option.selected {
+            border-color: var(--primary);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .quiz-option.correct {
+            border-color: var(--secondary);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .quiz-option.incorrect {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .quiz-result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: var(--bg);
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .quiz-score {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Search */
+        .search-box {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .search-results {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .search-result-item {
+            padding: 1rem;
+            background: var(--bg);
+            border-radius: 6px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .search-result-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .search-result-excerpt {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alerts */
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .alert-success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+
+        .alert-warning {
+            background: #fffbeb;
+            color: #92400e;
+            border: 1px solid #fed7aa;
+        }
+
+        /* Hidden */
+        .hidden { display: none !important; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main { padding: 1rem; }
+            .header-content { padding: 1rem; }
+            .nav-content { padding: 0 1rem; overflow-x: auto; }
+            .dashboard { grid-template-columns: 1fr; }
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <h1>Digital Tutor FTE</h1>
-        <div class="subtitle">Phase 1 Basic Web Frontend Validation</div>
-
-        <div class="api-key-box">
-            🔑 Utilizing Authenticated API Key: <strong>test_api_key_12345</strong>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <span class="logo-icon">🎓</span>
+                <span>Course Companion FTE</span>
+            </div>
+            <div class="user-info">
+                <span id="user-email">Loading...</span>
+                <span id="user-tier" class="user-badge free">Free</span>
+            </div>
         </div>
+    </header>
 
-        <div id="loading" style="text-align: center; padding: 20px;">Loading course chapters...</div>
-
-        <div id="chapters"></div>
-
-        <div id="content-view">
-            <button class="back-btn" onclick="showChapters()">← Back to Chapters</button>
-            <h2 id="content-title"></h2>
-            <div id="content-body"></div>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-content">
+            <button class="nav-btn active" onclick="showSection('chapters')">📚 Chapters</button>
+            <button class="nav-btn" onclick="showSection('progress')">📊 Progress</button>
+            <button class="nav-btn" onclick="showSection('quiz')">📝 Quiz</button>
+            <button class="nav-btn" onclick="showSection('search')">🔍 Search</button>
         </div>
-    </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Chapters Section -->
+        <section id="chapters-section" class="dashboard">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Course Chapters</h2>
+                </div>
+                <div class="card-body">
+                    <div id="chapter-list" class="chapter-list">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <span style="margin-left: 1rem;">Loading chapters...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="card" style="margin-bottom: 1rem;">
+                    <div class="card-header">
+                        <h3 class="card-title">Your Progress</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="progress-stats">
+                            <div class="stat-card">
+                                <div class="stat-value" id="chapters-completed">0</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="current-streak">0</div>
+                                <div class="stat-label">Day Streak</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Overall Progress</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="overall-progress" style="width: 0%"></div>
+                        </div>
+                        <div style="text-align: right; font-size: 0.875rem; color: var(--text-muted);">
+                            <span id="progress-percent">0</span>%
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Quick Actions</h3>
+                    </div>
+                    <div class="card-body" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <button class="btn btn-primary" onclick="startQuiz()">📝 Start Quiz</button>
+                        <button class="btn btn-secondary" onclick="showSection('search')">🔍 Search Content</button>
+                        <button class="btn btn-secondary" onclick="refreshProgress()">🔄 Refresh Progress</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Content Viewer (hidden by default) -->
+        <section id="content-section" class="hidden">
+            <div class="content-viewer">
+                <div class="content-header">
+                    <h2 id="content-title">Chapter Title</h2>
+                    <button class="btn btn-secondary" onclick="showChapters()">← Back to Chapters</button>
+                </div>
+                <div class="content-body" id="content-body">
+                    Loading content...
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Section -->
+        <section id="progress-section" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Your Learning Progress</h2>
+                </div>
+                <div class="card-body">
+                    <div id="progress-details">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <span style="margin-left: 1rem;">Loading progress...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz-section" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Chapter Quiz</h2>
+                    <select id="quiz-chapter-select" class="btn btn-secondary" onchange="loadQuiz()">
+                        <option value="">Select a chapter...</option>
+                    </select>
+                </div>
+                <div class="card-body">
+                    <div id="quiz-container" class="quiz-container">
+                        <p style="text-align: center; color: var(--text-muted);">Select a chapter to start the quiz</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Section -->
+        <section id="search-section" class="hidden">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Search Course Content</h2>
+                </div>
+                <div class="card-body">
+                    <div class="search-box">
+                        <input type="text" id="search-input" class="search-input" placeholder="Search for topics, concepts, or keywords..." onkeypress="if(event.key==='Enter') performSearch()">
+                        <button class="btn btn-primary" onclick="performSearch()">🔍 Search</button>
+                    </div>
+                    <div id="search-results" class="search-results"></div>
+                </div>
+            </div>
+        </section>
+    </main>
 
     <script>
+        // Configuration
         const API_URL = "http://127.0.0.1:8000";
-        const API_KEY = "test_api_key_12345";
-        const headers = { "X-API-Key": API_KEY };
+        const API_KEY = "test_api_key_12345"; // Replace with actual seeded API key
+        const HEADERS = { "X-API-Key": API_KEY, "Content-Type": "application/json" };
 
-        async function init() {
-            try {
-                // Check if backend is running
-                await fetch(`${API_URL}/health`).catch(() => {
-                    throw new Error("Backend server is not running at http://localhost:8000. Please start it using 'uvicorn app.main:app --reload'");
-                });
+        // State
+        let chapters = [];
+        let currentChapter = null;
+        let quizQuestions = [];
+        let selectedAnswers = {};
 
-                const res = await fetch(`${API_URL}/chapters`, { headers });
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadUser();
+            loadChapters();
+            loadProgress();
+        });
 
-                if (!res.ok) {
-                    if (res.status === 401) throw new Error("Authentication failed. Make sure the API key is seeded in the database.");
-                    throw new Error(`API Error: ${res.statusText}`);
-                }
+        // Navigation
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.main > section').forEach(s => s.classList.add('hidden'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
 
-                const data = await res.json();
-                document.getElementById('loading').style.display = 'none';
-                const container = document.getElementById("chapters");
-
-                if (!data.data || !data.data.chapters || data.data.chapters.length === 0) {
-                    container.innerHTML = "<div class='error'>No chapters found. Make sure to run the seed script!</div>";
-                    return;
-                }
-
-                data.data.chapters.forEach(ch => {
-                    const card = document.createElement("div");
-                    card.className = "chapter-card";
-                    card.onclick = () => loadContent(ch.id);
-
-                    const accessBadge = ch.is_free ? '<span class="badge" style="background:#dcfce7;color:#166534">Free</span>' : '<span class="badge" style="background:#fef3c7;color:#92400e">Premium</span>';
-
-                    card.innerHTML = `
-                        <div class="chapter-title">${ch.sequence_order}. ${ch.title}</div>
-                        <div class="chapter-meta">
-                            <span>Level: ${ch.difficulty}</span>
-                            <span>⏱️ ${ch.estimated_read_min} min</span>
-                            ${accessBadge}
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
-            } catch (err) {
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('chapters').innerHTML = `<div class="error">⚠️ ${err.message}</div>`;
-            }
-        }
-
-        async function loadContent(id) {
-            document.getElementById("chapters").style.display = "none";
-            document.getElementById("content-view").style.display = "block";
-            document.getElementById("content-body").innerHTML = "<p>Loading content...</p>";
-            document.getElementById("content-title").textContent = "";
-
-            try {
-                const res = await fetch(`${API_URL}/chapters/${id}`, { headers });
-
-                if (!res.ok) {
-                    if (res.status === 403) throw new Error("Access Denied: You need a Premium subscription to access this chapter.");
-                    throw new Error(`Failed to load content: ${res.statusText}`);
-                }
-
-                const data = await res.json();
-                document.getElementById("content-title").textContent = data.data.title;
-
-                // Simple markdown to HTML replacement for the basic test
-                let contentHTML = data.data.content
-                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-                    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
-                    .replace(/\n\n/gim, '</p><p>');
-
-                document.getElementById("content-body").innerHTML = `<p>${contentHTML}</p>`;
-            } catch (err) {
-                document.getElementById("content-body").innerHTML = `<div class="error">⚠️ ${err.message}</div>`;
+            // Show requested section
+            if (section === 'chapters') {
+                document.getElementById('chapters-section').classList.remove('hidden');
+                document.querySelectorAll('.nav-btn')[0].classList.add('active');
+            } else if (section === 'progress') {
+                document.getElementById('progress-section').classList.remove('hidden');
+                document.querySelectorAll('.nav-btn')[1].classList.add('active');
+                loadProgressDetails();
+            } else if (section === 'quiz') {
+                document.getElementById('quiz-section').classList.remove('hidden');
+                document.querySelectorAll('.nav-btn')[2].classList.add('active');
+                populateQuizSelect();
+            } else if (section === 'search') {
+                document.getElementById('search-section').classList.remove('hidden');
+                document.querySelectorAll('.nav-btn')[3].classList.add('active');
             }
         }
 
         function showChapters() {
-            document.getElementById("content-view").style.display = "none";
-            document.getElementById("chapters").style.display = "flex";
+            document.getElementById('content-section').classList.add('hidden');
+            document.getElementById('chapters-section').classList.remove('hidden');
         }
 
-        // Initialize fetching
-        init();
+        // API Functions
+        async function loadUser() {
+            try {
+                const res = await fetch(`${API_URL}/users/me`, { headers: HEADERS });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('user-email').textContent = data.data.email;
+                    const tierBadge = document.getElementById('user-tier');
+                    tierBadge.textContent = data.data.tier.charAt(0).toUpperCase() + data.data.tier.slice(1);
+                    tierBadge.className = `user-badge ${data.data.tier}`;
+                }
+            } catch (err) {
+                console.error('Failed to load user:', err);
+            }
+        }
+
+        async function loadChapters() {
+            try {
+                const res = await fetch(`${API_URL}/chapters`, { headers: HEADERS });
+                if (res.ok) {
+                    const data = await res.json();
+                    chapters = data.data.chapters;
+                    renderChapters();
+                } else {
+                    throw new Error('Failed to load chapters');
+                }
+            } catch (err) {
+                document.getElementById('chapter-list').innerHTML = `
+                    <div class="alert alert-error">
+                        ⚠️ Error: ${err.message}. Make sure the backend is running.
+                    </div>
+                `;
+            }
+        }
+
+        async function loadChapterContent(chapterId) {
+            try {
+                const res = await fetch(`${API_URL}/chapters/${chapterId}`, { headers: HEADERS });
+                if (res.status === 403) {
+                    alert('This chapter requires Premium access. Please upgrade to continue.');
+                    return;
+                }
+                if (!res.ok) throw new Error('Failed to load content');
+
+                const data = await res.json();
+                currentChapter = data.data;
+                renderContent(data.data);
+            } catch (err) {
+                alert(`Error: ${err.message}`);
+            }
+        }
+
+        async function loadProgress() {
+            try {
+                const res = await fetch(`${API_URL}/progress/me`, { headers: HEADERS });
+                if (res.ok) {
+                    const data = await res.json();
+                    updateProgressUI(data.data);
+                }
+            } catch (err) {
+                console.error('Failed to load progress:', err);
+            }
+        }
+
+        async function refreshProgress() {
+            await loadProgress();
+            alert('Progress refreshed!');
+        }
+
+        async function updateChapterProgress(chapterId, status) {
+            try {
+                await fetch(`${API_URL}/progress/me/chapter/${chapterId}`, {
+                    method: 'PUT',
+                    headers: HEADERS,
+                    body: JSON.stringify({ status })
+                });
+                await loadProgress();
+            } catch (err) {
+                console.error('Failed to update progress:', err);
+            }
+        }
+
+        // Render Functions
+        function renderChapters() {
+            const container = document.getElementById('chapter-list');
+            container.innerHTML = chapters.map(ch => `
+                <div class="chapter-item ${ch.is_locked ? 'locked' : ''}" 
+                     onclick="${ch.is_locked ? 'showUpgradeMessage()' : `loadChapterContent('${ch.id}')`}">
+                    <div class="chapter-number">${ch.sequence_order}</div>
+                    <div class="chapter-info">
+                        <div class="chapter-name">${ch.title}</div>
+                        <div class="chapter-meta">
+                            <span>📊 ${ch.difficulty.charAt(0).toUpperCase() + ch.difficulty.slice(1)}</span>
+                            <span>⏱️ ${ch.estimated_read_min} min</span>
+                            <span>${ch.is_free ? '🆓 Free' : '💎 Premium'}</span>
+                        </div>
+                    </div>
+                    <div class="chapter-actions">
+                        ${!ch.is_locked ? `
+                            <button class="btn btn-primary" onclick="event.stopPropagation(); loadChapterContent('${ch.id}')">
+                                ${ch.is_locked ? '🔒 Locked' : '📖 Read'}
+                            </button>
+                        ` : '🔒'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderContent(chapter) {
+            document.getElementById('chapters-section').classList.add('hidden');
+            document.getElementById('content-section').classList.remove('hidden');
+            document.getElementById('content-title').textContent = `${chapter.sequence_order}. ${chapter.title}`;
+
+            // Simple markdown to HTML conversion
+            let html = chapter.content
+                .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+                .replace(/```(\w+)?\n([\s\S]*?)```/gim, '<pre><code>$2</code></pre>')
+                .replace(/`(.*?)`/gim, '<code>$1</code>')
+                .replace(/\n\n/gim, '</p><p>')
+                .replace(/^- (.*$)/gim, '<li>$1</li>')
+                .replace(/^\d+\. (.*$)/gim, '<li>$1</li>');
+
+            document.getElementById('content-body').innerHTML = `<p>${html}</p>`;
+
+            // Mark as in progress
+            updateChapterProgress(chapter.id, 'in_progress');
+        }
+
+        function updateProgressUI(progress) {
+            document.getElementById('chapters-completed').textContent = progress.chapters_completed?.length || 0;
+            document.getElementById('current-streak').textContent = progress.current_streak_days || 0;
+            document.getElementById('overall-progress').style.width = `${progress.overall_percentage || 0}%`;
+            document.getElementById('progress-percent').textContent = Math.round(progress.overall_percentage || 0);
+        }
+
+        async function loadProgressDetails() {
+            const container = document.getElementById('progress-details');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><span style="margin-left:1rem">Loading...</span></div>';
+
+            try {
+                const res = await fetch(`${API_URL}/progress/me`, { headers: HEADERS });
+                if (res.ok) {
+                    const data = await res.json();
+                    const p = data.data;
+
+                    container.innerHTML = `
+                        <div class="progress-stats">
+                            <div class="stat-card">
+                                <div class="stat-value">${p.chapters_completed?.length || 0}</div>
+                                <div class="stat-label">Chapters Completed</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${p.chapters_in_progress?.length || 0}</div>
+                                <div class="stat-label">In Progress</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${p.current_streak_days || 0}</div>
+                                <div class="stat-label">Current Streak</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value">${p.longest_streak_days || 0}</div>
+                                <div class="stat-label">Longest Streak</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar" style="height: 16px; margin: 2rem 0;">
+                            <div class="progress-fill" style="width: ${p.overall_percentage || 0}%"></div>
+                        </div>
+                        <p style="text-align: center; font-size: 1.25rem; font-weight: 600;">
+                            Overall Progress: ${Math.round(p.overall_percentage || 0)}%
+                        </p>
+                        ${p.last_activity_date ? `
+                            <p style="text-align: center; margin-top: 1rem; color: var(--text-muted);">
+                                Last Activity: ${p.last_activity_date}
+                            </p>
+                        ` : ''}
+                    `;
+                }
+            } catch (err) {
+                container.innerHTML = `<div class="alert alert-error">Error loading progress: ${err.message}</div>`;
+            }
+        }
+
+        // Quiz Functions
+        function populateQuizSelect() {
+            const select = document.getElementById('quiz-chapter-select');
+            select.innerHTML = '<option value="">Select a chapter...</option>' +
+                chapters.map(ch => `
+                    <option value="${ch.id}" ${ch.is_locked ? 'disabled' : ''}>
+                        ${ch.sequence_order}. ${ch.title} ${ch.is_locked ? '(🔒 Premium)' : ''}
+                    </option>
+                `).join('');
+        }
+
+        async function loadQuiz() {
+            const chapterId = document.getElementById('quiz-chapter-select').value;
+            if (!chapterId) return;
+
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><span style="margin-left:1rem">Loading quiz...</span></div>';
+
+            try {
+                const res = await fetch(`${API_URL}/quizzes/${chapterId}`, { headers: HEADERS });
+                if (res.ok) {
+                    const data = await res.json();
+                    quizQuestions = data.data;
+                    selectedAnswers = {};
+                    renderQuiz();
+                }
+            } catch (err) {
+                container.innerHTML = `<div class="alert alert-error">Error: ${err.message}</div>`;
+            }
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = quizQuestions.map((q, i) => `
+                <div class="quiz-question" id="question-${q.id}">
+                    <div class="quiz-question-text">${i + 1}. ${q.question_text}</div>
+                    <div class="quiz-options">
+                        ${q.options.map(opt => `
+                            <div class="quiz-option" onclick="selectAnswer('${q.id}', '${opt}')">
+                                <input type="radio" name="q-${q.id}" value="${opt}">
+                                <span>${opt}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('') + `
+                <button class="btn btn-primary" onclick="submitQuiz()" style="margin-top: 1rem; width: 100%;">
+                    Submit Answers
+                </button>
+            `;
+        }
+
+        function selectAnswer(questionId, answer) {
+            selectedAnswers[questionId] = answer;
+            document.querySelectorAll(`#question-${questionId} .quiz-option`).forEach(opt => {
+                opt.classList.remove('selected');
+                if (opt.querySelector('span').textContent === answer) {
+                    opt.classList.add('selected');
+                    opt.querySelector('input').checked = true;
+                }
+            });
+        }
+
+        async function submitQuiz() {
+            const chapterId = document.getElementById('quiz-chapter-select').value;
+            if (!chapterId) return;
+
+            const answers = Object.keys(selectedAnswers).map(qid => ({
+                question_id: qid,
+                answer: selectedAnswers[qid]
+            }));
+
+            try {
+                const res = await fetch(`${API_URL}/quizzes/${chapterId}/submit`, {
+                    method: 'POST',
+                    headers: HEADERS,
+                    body: JSON.stringify({ answers })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    renderQuizResults(data.data);
+                }
+            } catch (err) {
+                alert(`Error submitting quiz: ${err.message}`);
+            }
+        }
+
+        function renderQuizResults(result) {
+            const container = document.getElementById('quiz-container');
+            const percentage = result.percentage;
+
+            container.innerHTML = `
+                <div class="quiz-result">
+                    <div class="quiz-score">${percentage}%</div>
+                    <p style="font-size: 1.25rem; margin: 1rem 0;">
+                        Score: ${result.score}/${result.total}
+                    </p>
+                    <p style="color: var(--text-muted); margin-bottom: 2rem;">
+                        ${percentage >= 80 ? '🎉 Excellent work!' : percentage >= 60 ? '👍 Good effort!' : '📚 Keep studying!'}
+                    </p>
+                </div>
+                <div style="margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Detailed Results:</h3>
+                    ${result.results.map((r, i) => `
+                        <div class="quiz-question ${r.correct ? '' : 'quiz-option incorrect'}" style="border-left: 4px solid ${r.correct ? 'var(--secondary)' : 'var(--danger)'}">
+                            <div class="quiz-question-text">${i + 1}. ${r.correct ? '✓ Correct!' : '✗ Incorrect'}</div>
+                            <p style="margin: 0.5rem 0;"><strong>Correct Answer:</strong> ${r.correct_answer}</p>
+                            ${r.explanation ? `<p style="color: var(--text-muted);"><strong>Explanation:</strong> ${r.explanation}</p>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+                <button class="btn btn-primary" onclick="loadQuiz()" style="margin-top: 2rem;">
+                    🔄 Retry Quiz
+                </button>
+            `;
+        }
+
+        function startQuiz() {
+            showSection('quiz');
+        }
+
+        // Search Functions
+        async function performSearch() {
+            const query = document.getElementById('search-input').value.trim();
+            if (!query) return;
+
+            const container = document.getElementById('search-results');
+            container.innerHTML = '<div class="loading"><div class="spinner"></div><span style="margin-left:1rem">Searching...</span></div>';
+
+            try {
+                const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query)}`, { headers: HEADERS });
+                if (res.ok) {
+                    const data = await res.json();
+                    const results = data.data;
+
+                    if (results.length === 0) {
+                        container.innerHTML = '<p style="text-align: center; color: var(--text-muted);">No results found. Try different keywords.</p>';
+                    } else {
+                        container.innerHTML = results.map(r => `
+                            <div class="search-result-item">
+                                <div class="search-result-title">📖 ${r.chapter_title}</div>
+                                <div class="search-result-excerpt">${r.excerpt}</div>
+                                <button class="btn btn-secondary" onclick="loadChapterContent('${r.chapter_id}')" style="margin-top: 0.5rem;">
+                                    View Chapter
+                                </button>
+                            </div>
+                        `).join('');
+                    }
+                }
+            } catch (err) {
+                container.innerHTML = `<div class="alert alert-error">Search error: ${err.message}</div>`;
+            }
+        }
+
+        function showUpgradeMessage() {
+            alert('🌟 Upgrade to Premium to access all chapters!\n\nPremium benefits:\n• All 5 chapters\n• Unlimited quizzes\n• Progress tracking\n• Certificate of completion\n\nContact admin to upgrade.');
+        }
     </script>
 </body>
-
 </html>
