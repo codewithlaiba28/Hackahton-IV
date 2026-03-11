@@ -32,7 +32,7 @@ class User(Base):
     api_key: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     tier: Mapped[UserTier] = mapped_column(
-        SQLEnum(UserTier),
+        SQLEnum(UserTier, values_callable=lambda x: [e.value for e in x]),
         nullable=False,
         default=UserTier.FREE
     )

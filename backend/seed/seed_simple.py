@@ -22,10 +22,11 @@ CHAPTERS = [
     ("ch-005", "Agent Factory Architecture", "advanced", 22, False, 5, None, None),
 ]
 
-# FK updates after all chapters inserted
+# FK updates after all chapters inserted (id, prev, next)
 FK_UPDATES = [
-    ("ch-001", "ch-002"),  # ch-001 -> next: ch-002
-    ("ch-002", "ch-001", "ch-003"),  # ch-002 -> prev: ch-001, next: ch-003
+    ("ch-001", None, "ch-002"),
+    ("ch-002", "ch-001", "ch-003"),
+    ("ch-002", "ch-001", "ch-003"),
     ("ch-003", "ch-002", "ch-004"),
     ("ch-004", "ch-003", "ch-005"),
     ("ch-005", "ch-004", None),
@@ -58,7 +59,7 @@ async def seed_chapters():
                 sys.modules['sqlalchemy'].text(
                     """INSERT INTO chapters 
                     (id, title, difficulty, estimated_read_min, is_free, sequence_order, prev_chapter_id, next_chapter_id, r2_content_key, created_at)
-                    VALUES (:id, :title, :difficulty, :read_min, :is_free, :seq, NULL, NULL, :r2_key, NOW())"""
+                    VALUES (:id, :title, :difficulty, :read_min, :is_free, :seq, NULL, NULL, :r2_key, CURRENT_TIMESTAMP)"""
                 ),
                 {
                     "id": chapter_id,

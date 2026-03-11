@@ -32,9 +32,15 @@ app = FastAPI(
 )
 
 # Configure CORS
+# In development, allow all origins for testing. In production, restrict to ChatGPT.
+if settings.APP_ENV == "development":
+    allow_origins = ["*"]
+else:
+    allow_origins = [settings.CHATGPT_APP_ORIGIN]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[settings.CHATGPT_APP_ORIGIN],
+    allow_origins=allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

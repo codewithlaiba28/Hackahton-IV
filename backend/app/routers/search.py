@@ -3,6 +3,7 @@
 # This is a Zero-Backend-LLM architecture. Violation = disqualification.
 
 from fastapi import APIRouter, Depends, Query
+import sqlalchemy
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, text
 from typing import List, Optional
@@ -37,19 +38,34 @@ async def search_chapters(
     Returns up to 5 relevant sections.
     Freemium gate enforced - free users don't see gated chapter results.
     """
-    # Build search query using PostgreSQL tsvector
-    # Use websearch_to_tsquery for natural language search
-    search_query = func.websearch_to_tsquery('english', q)
-    
-    # Build base query
-    stmt = select(
-        Chapter.id,
-        Chapter.title,
-        func.ts_rank_cd(Chapter.search_vector, search_query).label('relevance'),
-        func.left(Chapter.r2_content_key, 200).label('excerpt')  # Use r2_content_key as placeholder
-    ).where(
-        Chapter.search_vector.op('@@')(search_query)
-    )
+    # Detect database type
+    bind = db.get_bind()
+    is_sqlite = bind.dialect.name == "sqlite"
+
+    if is_sqlite:
+        # SQLite fallback: search title and ID using LIKE
+        stmt = select(
+            Chapter.id,
+            Chapter.title,
+            func.cast(1.0, sqlalchemy.Float).label('relevance'),
+            Chapter.title.label('excerpt')
+        ).where(
+            sqlalchemy.or_(
+                Chapter.title.icontains(q),
+                Chapter.id.icontains(q)
+            )
+        )
+    else:
+        # PostgreSQL full-text search
+        search_query = func.websearch_to_tsquery('english', q)
+        stmt = select(
+            Chapter.id,
+            Chapter.title,
+            func.ts_rank_cd(Chapter.search_vector, search_query).label('relevance'),
+            func.left(Chapter.r2_content_key, 200).label('excerpt')
+        ).where(
+            Chapter.search_vector.op('@@')(search_query)
+        )
     
     # Filter by specific chapter if provided
     if chapter_id:
@@ -60,7 +76,10 @@ async def search_chapters(
         stmt = stmt.where(Chapter.is_free == True)
     
     # Order by relevance and limit results
-    stmt = stmt.order_by(text('relevance DESC')).limit(5)
+    if is_sqlite:
+        stmt = stmt.order_by(Chapter.sequence_order).limit(5)
+    else:
+        stmt = stmt.order_by(text('relevance DESC')).limit(5)
     
     result = await db.execute(stmt)
     rows = result.all()
@@ -70,8 +89,8 @@ async def search_chapters(
         SearchResult(
             chapter_id=row.id,
             chapter_title=row.title,
-            excerpt=f"Content matches for: {q}",  # Placeholder until we fetch actual content
-            relevance_score=float(row.relevance) if row.relevance else 0.0
+            excerpt=f"Found in: {row.title}" if is_sqlite else f"Matches found",
+            relevance_score=float(row.relevance) if hasattr(row, 'relevance') else 1.0
         )
         for row in rows
     ]

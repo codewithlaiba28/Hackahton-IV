@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,6 +13,7 @@
             --text-main: #1e293b;
             --text-muted: #64748b;
         }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
@@ -22,60 +24,70 @@
             flex-direction: column;
             align-items: center;
         }
+
         .container {
             max-width: 800px;
             width: 100%;
         }
+
         h1 {
             color: var(--primary);
             text-align: center;
             margin-bottom: 5px;
         }
+
         .subtitle {
             text-align: center;
             color: var(--text-muted);
             margin-bottom: 30px;
         }
+
         .api-key-box {
             background-color: var(--surface);
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
             margin-bottom: 30px;
             text-align: center;
             font-family: monospace;
             border: 1px solid #e2e8f0;
         }
+
         #chapters {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
+
         .chapter-card {
             background-color: var(--surface);
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             border: 1px solid transparent;
         }
+
         .chapter-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             border-color: var(--primary);
         }
+
         .chapter-title {
             font-size: 1.2rem;
             font-weight: 600;
             margin-bottom: 5px;
         }
+
         .chapter-meta {
             font-size: 0.9rem;
             color: var(--text-muted);
             display: flex;
             gap: 15px;
         }
+
         .badge {
             background-color: #e0f2fe;
             color: #0369a1;
@@ -84,14 +96,16 @@
             font-size: 0.8rem;
             font-weight: 600;
         }
+
         #content-view {
             display: none;
             background-color: var(--surface);
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             margin-top: 20px;
         }
+
         .back-btn {
             background-color: transparent;
             color: var(--primary);
@@ -102,9 +116,11 @@
             margin-bottom: 20px;
             font-size: 1rem;
         }
+
         .back-btn:hover {
             text-decoration: underline;
         }
+
         .error {
             color: #ef4444;
             text-align: center;
@@ -112,19 +128,20 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>Digital Tutor FTE</h1>
         <div class="subtitle">Phase 1 Basic Web Frontend Validation</div>
-        
+
         <div class="api-key-box">
             🔑 Utilizing Authenticated API Key: <strong>test_api_key_12345</strong>
         </div>
 
         <div id="loading" style="text-align: center; padding: 20px;">Loading course chapters...</div>
-        
+
         <div id="chapters"></div>
-        
+
         <div id="content-view">
             <button class="back-btn" onclick="showChapters()">← Back to Chapters</button>
             <h2 id="content-title"></h2>
@@ -133,7 +150,7 @@
     </div>
 
     <script>
-        const API_URL = "http://localhost:8000";
+        const API_URL = "http://127.0.0.1:8000";
         const API_KEY = "test_api_key_12345";
         const headers = { "X-API-Key": API_KEY };
 
@@ -145,16 +162,16 @@
                 });
 
                 const res = await fetch(`${API_URL}/chapters`, { headers });
-                
+
                 if (!res.ok) {
                     if (res.status === 401) throw new Error("Authentication failed. Make sure the API key is seeded in the database.");
                     throw new Error(`API Error: ${res.statusText}`);
                 }
-                
+
                 const data = await res.json();
                 document.getElementById('loading').style.display = 'none';
                 const container = document.getElementById("chapters");
-                
+
                 if (!data.data || !data.data.chapters || data.data.chapters.length === 0) {
                     container.innerHTML = "<div class='error'>No chapters found. Make sure to run the seed script!</div>";
                     return;
@@ -164,9 +181,9 @@
                     const card = document.createElement("div");
                     card.className = "chapter-card";
                     card.onclick = () => loadContent(ch.id);
-                    
+
                     const accessBadge = ch.is_free ? '<span class="badge" style="background:#dcfce7;color:#166534">Free</span>' : '<span class="badge" style="background:#fef3c7;color:#92400e">Premium</span>';
-                    
+
                     card.innerHTML = `
                         <div class="chapter-title">${ch.sequence_order}. ${ch.title}</div>
                         <div class="chapter-meta">
@@ -191,7 +208,7 @@
 
             try {
                 const res = await fetch(`${API_URL}/chapters/${id}`, { headers });
-                
+
                 if (!res.ok) {
                     if (res.status === 403) throw new Error("Access Denied: You need a Premium subscription to access this chapter.");
                     throw new Error(`Failed to load content: ${res.statusText}`);
@@ -199,7 +216,7 @@
 
                 const data = await res.json();
                 document.getElementById("content-title").textContent = data.data.title;
-                
+
                 // Simple markdown to HTML replacement for the basic test
                 let contentHTML = data.data.content
                     .replace(/^### (.*$)/gim, '<h3>$1</h3>')
@@ -207,7 +224,7 @@
                     .replace(/^# (.*$)/gim, '<h1>$1</h1>')
                     .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
                     .replace(/\n\n/gim, '</p><p>');
-                
+
                 document.getElementById("content-body").innerHTML = `<p>${contentHTML}</p>`;
             } catch (err) {
                 document.getElementById("content-body").innerHTML = `<div class="error">⚠️ ${err.message}</div>`;
@@ -223,4 +240,5 @@
         init();
     </script>
 </body>
+
 </html>

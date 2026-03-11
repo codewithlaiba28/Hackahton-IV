@@ -24,13 +24,19 @@ async def seed_user():
         )
         existing = result.first()
         if not existing:
-            user_id = str(uuid.uuid4()).replace('-', '')
+            user_id = uuid.uuid4()
             await conn.execute(
                 sqlalchemy.text(
                     "INSERT INTO users (id, api_key, email, tier, created_at) "
-                    "VALUES (:id, :api_key, :email, 'premium', :now)"
+                    "VALUES (:id, :api_key, :email, :tier, :now)"
                 ),
-                {"id": user_id, "api_key": API_KEY, "email": "test@example.com", "now": datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')}
+                {
+                    "id": user_id, 
+                    "api_key": API_KEY, 
+                    "email": "test@example.com", 
+                    "tier": "premium",
+                    "now": datetime.utcnow()
+                }
             )
             await conn.commit()
             print(f"Created user with API Key: {API_KEY}")
