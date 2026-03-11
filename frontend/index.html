@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Companion - Phase 1 Check</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+        }
+        .api-key-box {
+            background-color: var(--surface);
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+            font-family: monospace;
+            border: 1px solid #e2e8f0;
+        }
+        #chapters {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .chapter-card {
+            background-color: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid transparent;
+        }
+        .chapter-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-color: var(--primary);
+        }
+        .chapter-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        .chapter-meta {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 15px;
+        }
+        .badge {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            padding: 2px 8px;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        #content-view {
+            display: none;
+            background-color: var(--surface);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-top: 20px;
+        }
+        .back-btn {
+            background-color: transparent;
+            color: var(--primary);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 0;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+        .back-btn:hover {
+            text-decoration: underline;
+        }
+        .error {
+            color: #ef4444;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Digital Tutor FTE</h1>
+        <div class="subtitle">Phase 1 Basic Web Frontend Validation</div>
+        
+        <div class="api-key-box">
+            🔑 Utilizing Authenticated API Key: <strong>test_api_key_12345</strong>
+        </div>
+
+        <div id="loading" style="text-align: center; padding: 20px;">Loading course chapters...</div>
+        
+        <div id="chapters"></div>
+        
+        <div id="content-view">
+            <button class="back-btn" onclick="showChapters()">← Back to Chapters</button>
+            <h2 id="content-title"></h2>
+            <div id="content-body"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:8000";
+        const API_KEY = "test_api_key_12345";
+        const headers = { "X-API-Key": API_KEY };
+
+        async function init() {
+            try {
+                // Check if backend is running
+                await fetch(`${API_URL}/health`).catch(() => {
+                    throw new Error("Backend server is not running at http://localhost:8000. Please start it using 'uvicorn app.main:app --reload'");
+                });
+
+                const res = await fetch(`${API_URL}/chapters`, { headers });
+                
+                if (!res.ok) {
+                    if (res.status === 401) throw new Error("Authentication failed. Make sure the API key is seeded in the database.");
+                    throw new Error(`API Error: ${res.statusText}`);
+                }
+                
+                const data = await res.json();
+                document.getElementById('loading').style.display = 'none';
+                const container = document.getElementById("chapters");
+                
+                if (!data.data || !data.data.chapters || data.data.chapters.length === 0) {
+                    container.innerHTML = "<div class='error'>No chapters found. Make sure to run the seed script!</div>";
+                    return;
+                }
+
+                data.data.chapters.forEach(ch => {
+                    const card = document.createElement("div");
+                    card.className = "chapter-card";
+                    card.onclick = () => loadContent(ch.id);
+                    
+                    const accessBadge = ch.is_free ? '<span class="badge" style="background:#dcfce7;color:#166534">Free</span>' : '<span class="badge" style="background:#fef3c7;color:#92400e">Premium</span>';
+                    
+                    card.innerHTML = `
+                        <div class="chapter-title">${ch.sequence_order}. ${ch.title}</div>
+                        <div class="chapter-meta">
+                            <span>Level: ${ch.difficulty}</span>
+                            <span>⏱️ ${ch.estimated_read_min} min</span>
+                            ${accessBadge}
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('chapters').innerHTML = `<div class="error">⚠️ ${err.message}</div>`;
+            }
+        }
+
+        async function loadContent(id) {
+            document.getElementById("chapters").style.display = "none";
+            document.getElementById("content-view").style.display = "block";
+            document.getElementById("content-body").innerHTML = "<p>Loading content...</p>";
+            document.getElementById("content-title").textContent = "";
+
+            try {
+                const res = await fetch(`${API_URL}/chapters/${id}`, { headers });
+                
+                if (!res.ok) {
+                    if (res.status === 403) throw new Error("Access Denied: You need a Premium subscription to access this chapter.");
+                    throw new Error(`Failed to load content: ${res.statusText}`);
+                }
+
+                const data = await res.json();
+                document.getElementById("content-title").textContent = data.data.title;
+                
+                // Simple markdown to HTML replacement for the basic test
+                let contentHTML = data.data.content
+                    .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                    .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                    .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                    .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+                    .replace(/\n\n/gim, '</p><p>');
+                
+                document.getElementById("content-body").innerHTML = `<p>${contentHTML}</p>`;
+            } catch (err) {
+                document.getElementById("content-body").innerHTML = `<div class="error">⚠️ ${err.message}</div>`;
+            }
+        }
+
+        function showChapters() {
+            document.getElementById("content-view").style.display = "none";
+            document.getElementById("chapters").style.display = "flex";
+        }
+
+        // Initialize fetching
+        init();
+    </script>
+</body>
+</html>
