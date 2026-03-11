@@ -17,8 +17,8 @@ from app.models.chapter import Chapter
 from app.models.quiz import QuizQuestion
 from app.models.progress import ChapterProgress
 
-# Test settings
-TEST_DATABASE_URL = "postgresql+asyncpg://test:test@localhost:5432/test_course_companion"
+# Test settings - Use SQLite for simpler testing
+TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
 @pytest.fixture(scope="session")
@@ -61,7 +61,7 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         autocommit=False,
         autoflush=False,
     )
-    
+
     async with async_session() as session:
         # Begin transaction
         await session.begin()
@@ -70,40 +70,29 @@ async def db_session(test_engine) -> AsyncGenerator[AsyncSession, None]:
         await session.rollback()
 
 
-@pytest.fixture
-async def free_user(db_session: AsyncSession) -> User:
-    """Create a free tier test user."""
-    user = User(
+def create_free_user() -> User:
+    """Helper to create a free tier test user with unique values."""
+    return User(
         id=uuid.uuid4(),
-        api_key="test_free_api_key_12345678901234567890",
-        email="free_user@test.com",
+        api_key=f"test_free_api_key_{uuid.uuid4().hex[:16]}",
+        email=f"free_user_{uuid.uuid4().hex[:8]}@test.com",
         tier=UserTier.FREE
     )
-    db_session.add(user)
-    await db_session.commit()
-    await db_session.refresh(user)
-    return user
 
 
-@pytest.fixture
-async def premium_user(db_session: AsyncSession) -> User:
-    """Create a premium tier test user."""
-    user = User(
+def create_premium_user() -> User:
+    """Helper to create a premium tier test user with unique values."""
+    return User(
         id=uuid.uuid4(),
-        api_key="test_premium_api_key_123456789012345678",
-        email="premium_user@test.com",
+        api_key=f"test_premium_api_key_{uuid.uuid4().hex[:16]}",
+        email=f"premium_user_{uuid.uuid4().hex[:8]}@test.com",
         tier=UserTier.PREMIUM
     )
-    db_session.add(user)
-    await db_session.commit()
-    await db_session.refresh(user)
-    return user
 
 
-@pytest.fixture
-async def sample_chapters(db_session: AsyncSession) -> list:
-    """Create sample chapters for testing."""
-    chapters = [
+def create_sample_chapters() -> list:
+    """Helper to create sample chapters for testing."""
+    return [
         Chapter(
             id="ch-001",
             title="Introduction to AI Agents",
@@ -160,18 +149,11 @@ async def sample_chapters(db_session: AsyncSession) -> list:
             r2_content_key="chapters/ch-005/content.md"
         ),
     ]
-    
-    for chapter in chapters:
-        db_session.add(chapter)
-    
-    await db_session.commit()
-    return chapters
 
 
-@pytest.fixture
-async def sample_quiz_questions(db_session: AsyncSession) -> list:
-    """Create sample quiz questions for testing."""
-    questions = [
+def create_sample_quiz_questions() -> list:
+    """Helper to create sample quiz questions for testing."""
+    return [
         QuizQuestion(
             id=uuid.uuid4(),
             chapter_id="ch-001",
@@ -197,10 +179,44 @@ async def sample_quiz_questions(db_session: AsyncSession) -> list:
             sequence_order=2
         ),
     ]
-    
+
+
+@pytest.fixture
+async def free_user(db_session: AsyncSession) -> User:
+    """Create a free tier test user."""
+    user = create_free_user()
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+async def premium_user(db_session: AsyncSession) -> User:
+    """Create a premium tier test user."""
+    user = create_premium_user()
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+    return user
+
+
+@pytest.fixture
+async def sample_chapters(db_session: AsyncSession) -> list:
+    """Create sample chapters for testing."""
+    chapters = create_sample_chapters()
+    for chapter in chapters:
+        db_session.add(chapter)
+    await db_session.commit()
+    return chapters
+
+
+@pytest.fixture
+async def sample_quiz_questions(db_session: AsyncSession) -> list:
+    """Create sample quiz questions for testing."""
+    questions = create_sample_quiz_questions()
     for question in questions:
         db_session.add(question)
-    
     await db_session.commit()
     return questions
 

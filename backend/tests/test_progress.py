@@ -7,6 +7,7 @@ import pytest
 from httpx import AsyncClient, ASGITransport
 from fastapi import status
 from datetime import date, timedelta
+from sqlalchemy import select
 
 from app.main import app
 from app.models.progress import ChapterProgress, DailyActivity

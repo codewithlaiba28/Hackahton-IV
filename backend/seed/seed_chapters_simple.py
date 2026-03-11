@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
 Simple seed script for course chapters.
+Reads content from local filesystem and creates database entries.
 """
 
 import asyncio
 import sys
 from pathlib import Path
 
+# Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
@@ -14,10 +16,12 @@ from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 from app.config import get_settings
-from app.models.chapter import Chapter
+from app.models import Chapter  # Import from models package to ensure all registered
+from app.database import Base
 
 settings = get_settings()
 
+# Chapter metadata (content read from files)
 CHAPTERS = [
     {
         "id": "ch-001",
@@ -74,14 +78,16 @@ CHAPTERS = [
 
 async def seed_chapters():
     """Seed chapters into the database."""
+    # Create engine and session
     engine = create_async_engine(settings.DATABASE_URL)
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-    
+
+    # Content directory
     content_dir = Path(settings.LOCAL_CONTENT_PATH) / "chapters"
-    content_dir.mkdir(parents=True, exist_ok=True)
 
     async with async_session() as session:
         for chapter_data in CHAPTERS:
+            # Check if chapter already exists
             result = await session.execute(
                 select(Chapter).where(Chapter.id == chapter_data["id"])
             )
@@ -91,21 +97,34 @@ async def seed_chapters():
                 print(f"Chapter {chapter_data['id']} already exists, skipping...")
                 continue
 
-            chapter_content_dir = content_dir / chapter_data["id"]
-            chapter_content_dir.mkdir(parents=True, exist_ok=True)
-            content_file = chapter_content_dir / "content.md"
-            
+            # Verify content file exists
+            content_file = content_dir / chapter_data["id"] / "content.md"
             if not content_file.exists():
-                content_file.write_text(f"# {chapter_data['title']}\n\nContent coming soon...", encoding='utf-8')
-            print(f"Saved content for chapter: {chapter_data['id']}")
+                print(f"Warning: Content file not found for {chapter_data['id']}")
+                continue
 
-            chapter = Chapter(**chapter_data)
+            # Create R2 content key (local filesystem path)
+            r2_key = f"chapters/{chapter_data['id']}/content.md"
+
+            # Create chapter in database
+            chapter = Chapter(
+                id=chapter_data["id"],
+                title=chapter_data["title"],
+                difficulty=chapter_data["difficulty"],
+                estimated_read_min=chapter_data["estimated_read_min"],
+                is_free=chapter_data["is_free"],
+                sequence_order=chapter_data["sequence_order"],
+                prev_chapter_id=chapter_data["prev_chapter_id"],
+                next_chapter_id=chapter_data["next_chapter_id"],
+                r2_content_key=r2_key,
+            )
             session.add(chapter)
             print(f"Added chapter to DB: {chapter_data['title']}")
 
+        # Commit all changes
         await session.commit()
         print(f"\nSuccessfully seeded {len(CHAPTERS)} chapters!")
-        print(f"Content stored in: {content_dir.absolute()}")
+        print(f"Content directory: {content_dir.absolute()}")
 
 
 if __name__ == "__main__":
