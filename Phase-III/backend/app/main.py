@@ -8,7 +8,7 @@ from contextlib import asynccontextmanager
 
 from app.config import get_settings
 from app.database import init_db, close_db
-from app.routers import chapters, quizzes, progress, access, users, search
+from app.routers import chapters, quizzes, progress, access, users, search, auth
 
 # Phase 2: Hybrid Intelligence Routers (isolated from Phase 1)
 from app.routers import adaptive_path, assessments
@@ -58,6 +58,7 @@ async def health_check():
 
 
 # Include routers
+app.include_router(auth.router, tags=["Phase 3: Authentication"])
 app.include_router(chapters.router, prefix="/chapters", tags=["Chapters"])
 app.include_router(quizzes.router, prefix="/quizzes", tags=["Quizzes"])
 app.include_router(progress.router, prefix="/progress", tags=["Progress"])

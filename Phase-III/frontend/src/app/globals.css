@@ -1,0 +1,90 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Backgrounds - Dark Theme */
+    --background: 0 0% 4%;
+    --foreground: 0 0% 94%;
+    
+    /* Cards */
+    --card: 0 0% 7%;
+    --card-foreground: 0 0% 94%;
+    
+    /* Popovers */
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 94%;
+    
+    /* Primary - Teal Green */
+    --primary: 164 100% 45%;
+    --primary-foreground: 0 0% 4%;
+    
+    /* Secondary - Electric Blue */
+    --secondary: 217 100% 50%;
+    --secondary-foreground: 0 0% 100%;
+    
+    /* Muted */
+    --muted: 0 0% 13%;
+    --muted-foreground: 0 0% 53%;
+    
+    /* Accent - Orange */
+    --accent: 24 89% 58%;
+    --accent-foreground: 0 0% 100%;
+    
+    /* Destructive */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Borders */
+    --border: 0 0% 13%;
+    --input: 0 0% 13%;
+    --ring: 164 100% 45%;
+    
+    /* Radius */
+    --radius: 0.5rem;
+    
+    /* Custom Colors */
+    --bg-base: 0 0% 4%;
+    --bg-surface: 0 0% 7%;
+    --bg-elevated: 0 0% 10%;
+    --bg-overlay: 0 0% 13%;
+    
+    --text-primary: 0 0% 94%;
+    --text-secondary: 0 0% 53%;
+    --text-muted: 0 0% 33%;
+    
+    --success: 142 71% 45%;
+    --warning: 38 92% 50%;
+    --error: 0 84% 60%;
+    --info: 217 91% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--bg-surface));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
