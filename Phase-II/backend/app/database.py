@@ -25,8 +25,16 @@ if "sqlite" not in settings.DATABASE_URL:
     engine_kwargs["max_overflow"] = 20
 
 # Create async engine with connection pooling
+# Create async engine with connection pooling
+from sqlalchemy.engine.url import make_url
+
+url = make_url(settings.DATABASE_URL)
+if "postgresql" in url.drivername:
+    # SSL required for Neon; statement_cache_size=0 required for Neon connection pooler
+    engine_kwargs["connect_args"] = {"ssl": True, "statement_cache_size": 0}
+
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    url,
     **engine_kwargs
 )
 

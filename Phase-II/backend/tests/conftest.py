@@ -9,16 +9,24 @@ import uuid
 from typing import AsyncGenerator, Generator
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy import text
+from httpx import AsyncClient, ASGITransport
 
 from app.database import Base, get_db
 from app.config import get_settings
+from app.main import app
 from app.models.user import User, UserTier
 from app.models.chapter import Chapter
 from app.models.quiz import QuizQuestion
 from app.models.progress import ChapterProgress
 
-# Test settings - Use SQLite for simpler testing
-TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+# Test settings - Use PostgreSQL for Phase 2 tests (JSONB support required)
+# Set TEST_DATABASE_URL environment variable to a PostgreSQL test database
+# Example: postgresql+asyncpg://postgres:password@localhost:5432/course_companion_test
+import os
+TEST_DATABASE_URL = os.environ.get(
+    "TEST_DATABASE_URL",
+    "postgresql+asyncpg://postgres:postgres@localhost:5432/course_companion_test"
+)
 
 
 @pytest.fixture(scope="session")
@@ -243,3 +251,31 @@ def invalid_headers() -> dict:
 def no_auth_headers() -> dict:
     """Get headers without authentication."""
     return {}
+
+
+@pytest.fixture
+async def client(db_session: AsyncSession) -> AsyncGenerator[AsyncClient, None]:
+    """
+    Create a test client for making HTTP requests to the API.
+
+    This fixture:
+    - Creates an AsyncClient for making async HTTP requests
+    - Overrides the database dependency to use the test session
+    - Yields the client for use in tests
+    - Cleans up the client after the test
+    """
+    from app.database import get_db
+
+    # Override the get_db dependency to use our test session
+    async def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    # Create the test client with ASGI transport
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
+        yield ac
+
+    # Clean up overrides
+    app.dependency_overrides.clear()

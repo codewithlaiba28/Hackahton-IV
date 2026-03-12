@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # Application Configuration
     APP_ENV: str = "development"
-    SECRET_KEY: str
+    SECRET_KEY: str = "dev-secret-key-change-me-in-production"
     API_KEY_HEADER: str = "X-API-Key"
 
     # Database Configuration
@@ -39,6 +39,16 @@ class Settings(BaseSettings):
     STORAGE_TYPE: str = "local"
     LOCAL_CONTENT_PATH: str = "./content"
 
+    # Phase 2: Hybrid Intelligence Configuration
+    ANTHROPIC_API_KEY: str = ""
+    CLAUDE_MODEL: str = "claude-sonnet-4-20250514"
+    CEREBRAS_API_KEY: str = ""
+    CEREBRAS_MODEL: str = "llama3.1-70b"
+    LLM_MAX_TOKENS: int = 1000
+    ADAPTIVE_PATH_MAX_COST_USD: float = 0.05
+    ASSESSMENT_MAX_COST_USD: float = 0.03
+    USER_MONTHLY_LLM_CAP_USD: float = 2.00
+
     @property
     def is_development(self) -> bool:
         """Check if running in development mode."""
@@ -58,3 +68,6 @@ def get_settings() -> Settings:
         Settings: Application settings instance.
     """
     return Settings()
+
+# Global settings instance
+settings = get_settings()

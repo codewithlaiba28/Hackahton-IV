@@ -18,7 +18,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.config import get_settings
 from app.models import QuizQuestion  # Import from models package
-from app.database import Base
+from app.database import Base, engine
 
 settings = get_settings()
 
@@ -329,8 +329,7 @@ QUIZZES = [
 
 async def seed_quizzes():
     """Seed quiz questions into the database."""
-    # Create engine and session
-    engine = create_async_engine(settings.DATABASE_URL)
+    # Use existing engine
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     async with async_session() as session:

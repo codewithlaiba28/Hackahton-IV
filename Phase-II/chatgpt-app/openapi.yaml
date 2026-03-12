@@ -473,3 +473,339 @@ paths:
       responses:
         '200':
           description: Search results (up to 5 relevant sections)
+
+  # ===========================================
+  # PHASE 2: HYBRID INTELLIGENCE ENDPOINTS
+  # ===========================================
+  # These endpoints use LLM calls (Premium/Pro tier only)
+  # All Phase 2 endpoints are under /api/v2/ prefix
+
+  /api/v2/adaptive/learning-path:
+    post:
+      summary: Generate Personalized Learning Path (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Generate a personalized learning path using AI analysis of:
+        - Quiz performance
+        - Learning patterns
+        - Knowledge gaps
+        - Optimal review timing
+
+        **Cost:** Included in Premium/Pro tier ($2-$5 monthly LLM budget)
+
+        **Triggers:**
+        - Student asks "What should I study next?"
+        - Student requests "Give me a study plan"
+        - Student asks "What's next for me?"
+
+        **Constitutional Compliance:**
+        - Premium-gated (Principle VIII)
+        - User-initiated (Principle VIII)
+        - Cost-tracked (Principle X)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                include_review:
+                  type: boolean
+                  description: Include review of weak areas
+      responses:
+        '200':
+          description: Personalized learning path generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      recommended_chapters:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            chapter_id:
+                              type: string
+                            priority:
+                              type: integer
+                            reason:
+                              type: string
+                            estimated_time_min:
+                              type: integer
+                      weak_areas:
+                        type: array
+                        items:
+                          type: string
+                      strengths:
+                        type: array
+                        items:
+                          type: string
+                      overall_assessment:
+                        type: string
+                      suggested_daily_minutes:
+                        type: integer
+                  meta:
+                    type: object
+                    properties:
+                      llm_call:
+                        type: boolean
+                      cached:
+                        type: boolean
+        '403':
+          description: Free tier - upgrade required
+        '503':
+          description: LLM service unavailable (fallback to cached)
+
+    get:
+      summary: Get Latest Cached Learning Path (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Get the most recently generated learning path without triggering a new LLM call.
+        Returns null if no previous recommendation exists.
+
+        **Cost:** $0 (cached result)
+      responses:
+        '200':
+          description: Cached recommendation or null
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    nullable: true
+
+  /api/v2/assessments/{chapter_id}/questions:
+    get:
+      summary: Get Assessment Questions (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Get open-ended assessment questions for a chapter.
+
+        **CRITICAL:** Does NOT include model_answer_criteria
+
+        **Triggers:**
+        - Student asks "Test my understanding"
+        - Student requests "I want a written test"
+        - Student asks "Give me assessment questions"
+
+        **Constitutional Compliance:**
+        - Premium-gated (Principle VIII)
+        - No criteria leak (security guard)
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of assessment questions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        question_text:
+                          type: string
+                        difficulty:
+                          type: string
+                          enum: [conceptual, analytical, applied]
+                  meta:
+                    type: object
+                    properties:
+                      criteria_exposed:
+                        type: boolean
+                        description: Always false (security)
+        '403':
+          description: Free tier - upgrade required
+
+  /api/v2/assessments/{chapter_id}/submit:
+    post:
+      summary: Submit Answer for LLM Grading (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Submit a written answer for LLM grading.
+
+        **Requirements:**
+        - Answer must be 20-500 words
+        - Premium/Pro tier only
+
+        **Returns:**
+        - Score (0-100)
+        - Grade (A/B/C/D/F)
+        - Detailed feedback
+        - Improvement suggestions
+
+        **Cost:** Included in Premium/Pro tier ($2-$5 monthly LLM budget)
+
+        **Constitutional Compliance:**
+        - Premium-gated (Principle VIII)
+        - User-initiated (explicit submission)
+        - Cost-tracked (Principle X)
+        - Word count validated (no wasted tokens)
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question_id:
+                  type: string
+                  format: uuid
+                answer_text:
+                  type: string
+                  description: Student's written answer (20-500 words)
+      responses:
+        '200':
+          description: Graded assessment with feedback
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      score:
+                        type: integer
+                        minimum: 0
+                        maximum: 100
+                      grade:
+                        type: string
+                        enum: [A, B, C, D, F]
+                      feedback:
+                        type: string
+                      correct_concepts:
+                        type: array
+                        items:
+                          type: string
+                      missing_concepts:
+                        type: array
+                        items:
+                          type: string
+                      improvement_suggestions:
+                        type: string
+                      word_count:
+                        type: integer
+                  meta:
+                    type: object
+                    properties:
+                      llm_call:
+                        type: boolean
+        '403':
+          description: Free tier - upgrade required
+        '422':
+          description: Invalid word count (must be 20-500 words)
+
+  /api/v2/assessments/{chapter_id}/results:
+    get:
+      summary: Get Assessment Results (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Get past assessment results for a chapter.
+        Returns cached results (no LLM call).
+
+        **Cost:** $0 (cached result)
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of past assessment results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_id:
+                          type: string
+                        score:
+                          type: integer
+                        grade:
+                          type: string
+                        feedback:
+                          type: string
+                        submitted_at:
+                          type: string
+                          format: date-time
+
+  /api/v2/users/me/cost-summary:
+    get:
+      summary: Get Monthly Cost Summary (All Tiers)
+      description: |
+        **TRANSPARENCY FEATURE - Available to All Tiers**
+
+        Get breakdown of LLM costs for the current month.
+        Free users see $0.00 (they cannot access hybrid features).
+
+        **Purpose:** Cost transparency for premium users
+      responses:
+        '200':
+          description: Monthly cost breakdown
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      month:
+                        type: string
+                        format: date
+                      total_cost_usd:
+                        type: number
+                        format: float
+                      breakdown:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            feature_name:
+                              type: string
+                            calls:
+                              type: integer
+                            cost_usd:
+                              type: number
+                              format: float
+                      monthly_cap:
+                        type: number
+                        format: float
+                        description: $2 for Premium, $5 for Pro
+                      remaining_budget:
+                        type: number
+                        format: float

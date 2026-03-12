@@ -7,42 +7,42 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from app.config import get_settings
-from sqlalchemy.ext.asyncio import create_async_engine
+from app.database import engine
 import sqlalchemy
 
 settings = get_settings()
 
 API_KEY = "test_api_key_12345"
 
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import sessionmaker
+from app.models.user import User, UserTier
+
 async def seed_user():
-    engine = create_async_engine(settings.DATABASE_URL)
-    async with engine.connect() as conn:
-        # Check if user exists
-        result = await conn.execute(
-            sqlalchemy.text("SELECT id FROM users WHERE api_key = :api_key"),
-            {"api_key": API_KEY}
-        )
-        existing = result.first()
-        if not existing:
-            user_id = uuid.uuid4()
-            await conn.execute(
-                sqlalchemy.text(
-                    "INSERT INTO users (id, api_key, email, tier, created_at) "
-                    "VALUES (:id, :api_key, :email, :tier, :now)"
-                ),
-                {
-                    "id": user_id, 
-                    "api_key": API_KEY, 
-                    "email": "test@example.com", 
-                    "tier": "premium",
-                    "now": datetime.utcnow()
-                }
+    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with async_session() as session:
+        try:
+            # Check if user exists
+            result = await session.execute(
+                select(User).where(User.api_key == API_KEY)
             )
-            await conn.commit()
-            print(f"Created user with API Key: {API_KEY}")
-        else:
-            print(f"User with API Key {API_KEY} already exists.")
-    await engine.dispose()
+            existing = result.scalar_one_or_none()
+            
+            if not existing:
+                new_user = User(
+                    api_key=API_KEY,
+                    email="test@example.com",
+                    tier=UserTier.PREMIUM
+                )
+                session.add(new_user)
+                await session.commit()
+                print(f"Created user with API Key: {API_KEY}")
+            else:
+                print(f"User with API Key {API_KEY} already exists.")
+        except Exception:
+            import traceback
+            traceback.print_exc()
 
 if __name__ == "__main__":
+    from sqlalchemy import select
     asyncio.run(seed_user())

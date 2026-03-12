@@ -11,13 +11,13 @@ from pathlib import Path
 # Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import sessionmaker
 
 from app.config import get_settings
 from app.models import Chapter  # Import from models package to ensure all registered
-from app.database import Base
+from app.database import Base, engine
 
 settings = get_settings()
 
@@ -78,8 +78,7 @@ CHAPTERS = [
 
 async def seed_chapters():
     """Seed chapters into the database."""
-    # Create engine and session
-    engine = create_async_engine(settings.DATABASE_URL)
+    # Use existing engine
     async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
     # Content directory

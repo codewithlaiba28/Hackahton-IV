@@ -1,0 +1,15 @@
+{
+  "chapter_id": "ch-002",
+  "questions": [
+    {
+      "question_text": "Explain the key features of the Claude Agent SDK that make it suitable for building production-grade AI agents. How does it handle tool integration and conversation management?",
+      "model_answer_criteria": "Must include: 1) Mention of built-in tool integration capabilities. 2) Description of conversation state management. 3) Reference to error handling and retry mechanisms. 4) Discussion of scalability or production-readiness features. 5) Specific examples from the SDK documentation.",
+      "difficulty": "analytical"
+    },
+    {
+      "question_text": "Compare and contrast the Claude Agent SDK with other agent frameworks you may know. What are the unique advantages and potential limitations of the Claude approach?",
+      "model_answer_criteria": "Must include: 1) At least 2 specific advantages of Claude Agent SDK. 2) At least 1 potential limitation or trade-off. 3) Comparison based on concrete features (not opinions). 4) Reference to developer experience, documentation, or ecosystem. 5) Balanced, evidence-based analysis.",
+      "difficulty": "applied"
+    }
+  ]
+}

@@ -10,6 +10,9 @@ from app.config import get_settings
 from app.database import init_db, close_db
 from app.routers import chapters, quizzes, progress, access, users, search
 
+# Phase 2: Hybrid Intelligence Routers (isolated from Phase 1)
+from app.routers import adaptive_path, assessments
+
 settings = get_settings()
 
 
@@ -61,6 +64,10 @@ app.include_router(progress.router, prefix="/progress", tags=["Progress"])
 app.include_router(access.router, prefix="/access", tags=["Access"])
 app.include_router(users.router, prefix="/users", tags=["Users"])
 app.include_router(search.router, prefix="/search", tags=["Search"])
+
+# Phase 2: Hybrid Intelligence Routers
+app.include_router(adaptive_path.router, tags=["Phase 2: Adaptive Learning"])
+app.include_router(assessments.router, tags=["Phase 2: Assessments"])
 
 
 if __name__ == "__main__":

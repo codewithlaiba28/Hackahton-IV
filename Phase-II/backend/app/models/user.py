@@ -4,15 +4,14 @@
 
 import uuid
 from datetime import datetime
-from enum import Enum
-from sqlalchemy import String, DateTime, Enum as SQLEnum, Uuid
+from sqlalchemy import String, DateTime, Uuid
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
 
 
-class UserTier(str, Enum):
-    """User subscription tier."""
+class UserTier(str):
+    """User subscription tier constants."""
     FREE = "free"
     PREMIUM = "premium"
     PRO = "pro"
@@ -32,7 +31,7 @@ class User(Base):
     api_key: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
     tier: Mapped[UserTier] = mapped_column(
-        SQLEnum(UserTier, values_callable=lambda x: [e.value for e in x]),
+        String(20),
         nullable=False,
         default=UserTier.FREE
     )
@@ -45,3 +44,6 @@ class User(Base):
     chapter_progress = relationship("ChapterProgress", back_populates="user", cascade="all, delete-orphan")
     quiz_attempts = relationship("QuizAttempt", back_populates="user", cascade="all, delete-orphan")
     daily_activity = relationship("DailyActivity", back_populates="user", cascade="all, delete-orphan")
+    llm_usage_records = relationship("LLMUsage", back_populates="user", cascade="all, delete-orphan")
+    adaptive_recommendations = relationship("AdaptiveRecommendation", back_populates="user", cascade="all, delete-orphan")
+    assessment_results = relationship("AssessmentResult", back_populates="user", cascade="all, delete-orphan")

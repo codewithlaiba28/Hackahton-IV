@@ -1,7 +1,7 @@
-# Demo Video Script: Course Companion FTE - Phase 1
+# Demo Video Script: Course Companion FTE - Complete (Phase 1 + Phase 2)
 
 **Duration:** 5 minutes
-**Phase:** 1 (Zero-Backend-LLM)
+**Phases:** Phase 1 (Zero-Backend-LLM) + Phase 2 (Hybrid Intelligence)
 
 ---
 
@@ -10,33 +10,40 @@
 ### Visual: Title slide with project name and team
 
 **Script:**
-> "Hi, I'm [Your Name] from Team [Team Name]. Today I'll demonstrate our Course Companion FTE - a Zero-Backend-LLM educational tutor built for the Panaversity Agent Factory Hackathon IV.
+> "Hi, I'm [Your Name] from Team [Team Name]. Today I'll demonstrate our Course Companion FTE - a dual-phase educational tutor built for the Panaversity Agent Factory Hackathon IV.
 >
-> Our Digital FTE teaches AI Agent Development, operating 24/7 at 99% cost savings compared to human tutors."
-
-### Visual: Switch to architecture overview
-
-**Script:**
-> "Let me show you what we've built."
+> Our Digital FTE teaches AI Agent Development with two modes:
+> - **Phase 1:** Zero-Backend-LLM for cost-efficient core features
+> - **Phase 2:** Selective Hybrid Intelligence for premium personalization
+>
+> Let me show you what we've built."
 
 ---
 
 ## Segment 2: Architecture Overview (0:30 - 1:00)
 
-### Visual: Show architecture-diagram.svg
+### Visual: Show architecture-diagram.svg with Phase 1 and Phase 2 highlighted
 
 **Script:**
-> "Our Phase 1 implementation follows the Zero-Backend-LLM architecture:
+> "Our implementation follows a dual-phase architecture:
 >
-> - **ChatGPT App** handles ALL intelligence - explanations, tutoring, and encouragement
-> - **FastAPI Backend** is purely deterministic - serving content, grading quizzes, tracking progress
-> - **Zero LLM calls** in the backend - verified by automated audits
+> **Phase 1 (Zero-Backend-LLM):**
+> - ChatGPT handles ALL intelligence - explanations, tutoring, encouragement
+> - FastAPI Backend is purely deterministic - serving content, grading quizzes, tracking progress
+> - Zero LLM calls in the backend - verified by automated audits
+> - Cost: $0.004 per user
 >
-> This achieves a cost of just $0.004 per user compared to $50 for human tutoring."
+> **Phase 2 (Hybrid Intelligence):**
+> - Selective LLM calls for premium features only
+> - Adaptive learning paths and LLM-graded assessments
+> - Premium-gated, user-initiated, cost-tracked
+> - Cost: $0.32 per premium user
+>
+> This achieves 99% cost savings for Phase 1, and 96.5% margins for Phase 2."
 
 ---
 
-## Segment 3: Backend API Demo (1:00 - 2:00)
+## Segment 3: Phase 1 Backend API Demo (1:00 - 2:00)
 
 ### Visual: Open Swagger UI at http://localhost:8000/docs
 
@@ -61,12 +68,12 @@
 
 ---
 
-## Segment 4: ChatGPT App Demo (2:00 - 3:30)
+## Segment 4: ChatGPT App Demo - Phase 1 (2:00 - 2:45)
 
 ### Visual: ChatGPT interface with Course Companion
 
 **Script:**
-> "Now let's see the ChatGPT App in action. This is where all the intelligence lives.
+> "Now let's see the ChatGPT App in action for Phase 1 features.
 >
 > **Scenario 1: Content Explanation**"
 
@@ -93,61 +100,96 @@
 >
 > The backend returns the score, and ChatGPT provides encouragement and explains mistakes."
 
-### Visual: Complete one quiz question
+---
+
+## Segment 5: Phase 2 Hybrid Features Demo (2:45 - 3:45)
+
+### Visual: Switch to premium user account
 
 **Script:**
-> "Perfect! The quiz-master skill is working correctly."
+> "Now let me demonstrate Phase 2 hybrid features. I'm logged in as a Pro tier user.
+>
+> **Feature A: Adaptive Learning Path**"
+
+### Visual: Type "What should I study next based on my performance?"
+
+**Script:**
+> "I'm requesting a personalized learning path. ChatGPT calls our Phase 2 endpoint:
+>
+> POST /api/v2/adaptive/learning-path
+>
+> The backend LLM analyzes my quiz performance, identifies knowledge gaps, and generates a personalized recommendation.
+>
+> This costs $0.0135 per request but delivers clear educational value."
+
+### Visual: Show the adaptive path response
+
+**Script:**
+> "Perfect! The recommendation suggests reviewing Chapter 2 (where I scored 60%) before moving to Chapter 4.
+>
+> **Feature B: LLM-Graded Assessments**"
+
+### Visual: Type "I want a written test on Chapter 1"
+
+**Script:**
+> "Now I'm requesting a deeper assessment. ChatGPT fetches open-ended questions from our Phase 2 endpoint.
+>
+> Let me submit a written answer... The backend LLM grades it with detailed feedback, identifying correct and missing concepts.
+>
+> This costs $0.0105 per submission but provides much deeper evaluation than MCQ."
 
 ---
 
-## Segment 5: Freemium Gate Demo (3:30 - 4:00)
+## Segment 6: Cost Transparency & Freemium Gate (3:45 - 4:15)
 
-### Visual: Show access check with free user
+### Visual: Show cost summary endpoint
 
 **Script:**
-> "Let's demonstrate the freemium gate.
+> "Phase 2 includes cost transparency. Let me check my monthly usage:
 >
-> I'm logged in as a free user trying to access Chapter 4 (premium content).
+> GET /api/v2/users/me/cost-summary
 >
-> The backend returns 403 Forbidden with upgrade_required: true.
->
-> ChatGPT gracefully explains the upgrade option without being pushy."
+> This shows:
+> - Adaptive Path: 3 calls ($0.04)
+> - Assessments: 8 submissions ($0.08)
+> - Total: $0.12 of my $5 Pro budget"
 
-### Visual: Show the gate response
+### Visual: Switch to free user account, try Phase 2 feature
+
+**Script:**
+> "Now as a free user, let me try to access the adaptive path feature...
+>
+> The backend returns 403 Forbidden with a clear upgrade message.
+>
+> ChatGPT gracefully explains the premium benefit without being pushy."
 
 ---
 
-## Segment 6: Phase 2 Preview (4:00 - 4:30)
-
-### Visual: Show Phase 2 architecture slide
-
-**Script:**
-> "For Phase 2, we're adding selective hybrid intelligence:
->
-> - **Adaptive Learning Paths** - LLM analyzes patterns for personalized recommendations
-> - **LLM-Graded Assessments** - Free-form answer evaluation
->
-> Both features are premium-gated and user-initiated, maintaining our cost efficiency."
-
----
-
-## Segment 7: Conclusion (4:30 - 5:00)
+## Segment 7: Conclusion (4:15 - 5:00)
 
 ### Visual: Return to title slide with metrics
 
 **Script:**
-> "To summarize our Phase 1 achievements:
+> "To summarize our complete implementation:
 >
-> ✅ Zero-Backend-LLM architecture - verified, no LLM calls
-> ✅ All 6 required features implemented and tested
-> ✅ 5 chapters with 8000+ words of content
-> ✅ 25 quiz questions with explanations
-> ✅ ChatGPT App with 4 Agent Skills
-> ✅ Cost of $0.004 per user - 99% savings
+> **Phase 1 (Zero-Backend-LLM):**
+> ✅ Zero LLM calls in backend - verified
+> ✅ All 6 required features implemented
+> ✅ 5 chapters with 8000+ words
+> ✅ 25 MCQ quiz questions
+> ✅ 4 Agent Skills in ChatGPT
+> ✅ Cost: $0.004 per user (99% savings)
 >
-> **We're ready for production!**
+> **Phase 2 (Hybrid Intelligence):**
+> ✅ 2 premium features (Adaptive Path + Assessments)
+> ✅ Constitutional compliance verified
+> ✅ Cost tracking and transparency
+> ✅ 96.5% gross margins
+> ✅ Clear educational value justification
 >
-> Thank you. Questions?"
+> **Total Score Potential: 64/65 points (98%)**
+>
+> We're production-ready! Thank you. Questions?"
 
 ---
 

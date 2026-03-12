@@ -45,3 +45,4 @@ class Chapter(Base):
     # Relationships
     quiz_questions = relationship("QuizQuestion", back_populates="chapter", cascade="all, delete-orphan")
     chapter_progress = relationship("ChapterProgress", back_populates="chapter", cascade="all, delete-orphan")
+    assessment_questions = relationship("AssessmentQuestion", back_populates="chapter", cascade="all, delete-orphan")

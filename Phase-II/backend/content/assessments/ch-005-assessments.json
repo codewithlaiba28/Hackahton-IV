@@ -1,0 +1,15 @@
+{
+  "chapter_id": "ch-005",
+  "questions": [
+    {
+      "question_text": "Explain the Agent Factory Architecture and how it enables scalable AI agent development. Describe the relationship between General Agents, Custom Agents, and the Spec-Driven Development process.",
+      "model_answer_criteria": "Must include: 1) Definition of Agent Factory as a manufacturing paradigm. 2) Explanation of General Agents (e.g., Claude Code) as manufacturers. 3) Description of Custom Agents as produced outputs. 4) Role of specifications (Spec.md) in guiding agent creation. 5) Benefits of this approach (consistency, scalability, quality control).",
+      "difficulty": "conceptual"
+    },
+    {
+      "question_text": "Using the Agent Factory Architecture, design a Course Companion FTE for a different subject (e.g., Data Science, Web Development, or Cybersecurity). Specify: the course topic, required Agent Skills, Phase 1 vs Phase 2 features, and cost considerations. Justify your architectural decisions.",
+      "model_answer_criteria": "Must include: 1) Clear course topic and target audience. 2) At least 4 custom Agent Skills with trigger keywords. 3) Phase 1 features (zero-LLM backend) clearly identified. 4) Phase 2 features (hybrid intelligence) with justification for LLM use. 5) Cost analysis showing understanding of zero-LLM vs hybrid trade-offs. 6) Alignment with constitutional principles from the architecture.",
+      "difficulty": "applied"
+    }
+  ]
+}
