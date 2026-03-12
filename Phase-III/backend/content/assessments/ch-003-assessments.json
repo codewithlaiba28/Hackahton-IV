@@ -1,0 +1,15 @@
+{
+  "chapter_id": "ch-003",
+  "questions": [
+    {
+      "question_text": "What is the Model Context Protocol (MCP) and why was it created? Explain the problem it solves in the AI agent ecosystem and describe a real-world scenario where MCP would be essential.",
+      "model_answer_criteria": "Must include: 1) Definition of MCP as a standardized protocol. 2) Explanation of the interoperability problem it solves. 3) Description of how MCP enables agents to connect to external tools/data. 4) A concrete real-world scenario (e.g., connecting to databases, APIs, or enterprise systems). 5) Mention of security or access control benefits.",
+      "difficulty": "conceptual"
+    },
+    {
+      "question_text": "Describe the architecture of MCP including the roles of MCP hosts, MCP clients, and MCP servers. How do these components communicate and what data flows between them?",
+      "model_answer_criteria": "Must include: 1) Clear definition of each component (host, client, server). 2) Explanation of the communication flow between components. 3) Description of the protocol layers or message types. 4) Understanding of resource discovery and tool invocation. 5) Accurate representation of the architecture diagram from the chapter.",
+      "difficulty": "analytical"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "chapter_id": "ch-001",
+  "questions": [
+    {
+      "question_text": "In your own words, explain what an AI Agent is and how it differs from a traditional software program. Provide a real-world example of an AI Agent in action.",
+      "model_answer_criteria": "Must include: 1) Definition of AI agent as autonomous system that perceives environment and acts to achieve goals. 2) Comparison to traditional deterministic programs (agents learn and adapt, traditional programs follow fixed rules). 3) Mention of perception-action loop or goal-directed behavior. 4) A relevant real-world example (e.g., self-driving car, smart thermostat, chatbot).",
+      "difficulty": "conceptual"
+    },
+    {
+      "question_text": "Describe the key components of an AI Agent's architecture. How do sensors and actuators enable an agent to interact with its environment?",
+      "model_answer_criteria": "Must include: 1) Identification of core components (sensors/perceptors, actuators/effectors, decision-making logic, goals/objectives). 2) Explanation of how sensors gather information from environment. 3) Explanation of how actuators execute actions. 4) Description of the perception-decision-action cycle.",
+      "difficulty": "analytical"
+    }
+  ]
+}
