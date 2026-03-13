@@ -1,4 +1,8 @@
+'use client';
+
 import { Card, CardContent } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import { Quote } from 'lucide-react';
 
 const testimonials = [
   {
@@ -23,31 +27,45 @@ const testimonials = [
 
 export default function Testimonials() {
   return (
-    <section className="py-20 bg-background">
-      <div className="max-w-6xl mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-4">
-          Loved by Learners Worldwide
-        </h2>
-        <p className="text-lg text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-          Join thousands of students mastering AI Agent Development
-        </p>
-        
-        <div className="grid md:grid-cols-3 gap-6">
+    <section className="py-24 bg-background overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-black text-white mb-4">
+            Trusted by <span className="text-primary">Global Builders</span>
+          </h2>
+          <p className="text-lg text-muted-foreground/60 max-w-2xl mx-auto">
+            Join thousands of students who have accelerated their careers with Course Companion.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8">
           {testimonials.map((testimonial, index) => (
-            <Card key={index} className="bg-bg-surface border-border">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
-                    {testimonial.avatar}
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+            >
+              <Card className="bg-bg-surface/50 border-white/5 transition-all hover:bg-bg-surface group h-full relative overflow-hidden">
+                <Quote className="absolute -top-4 -right-4 w-24 h-24 text-primary opacity-[0.03] group-hover:opacity-[0.08] transition-opacity" />
+
+                <CardContent className="pt-10 px-8 pb-10 flex flex-col h-full">
+                  <p className="text-white/80 italic text-lg leading-relaxed mb-8 flex-1">
+                    "{testimonial.content}"
+                  </p>
+
+                  <div className="flex items-center gap-4 border-t border-white/5 pt-8">
+                    <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-bold">
+                      {testimonial.avatar}
+                    </div>
+                    <div>
+                      <div className="font-bold text-white uppercase tracking-tight">{testimonial.name}</div>
+                      <div className="text-xs text-muted-foreground/50 font-semibold">{testimonial.role}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-semibold">{testimonial.name}</div>
-                    <div className="text-sm text-muted-foreground">{testimonial.role}</div>
-                  </div>
-                </div>
-                <p className="text-muted-foreground italic">"{testimonial.content}"</p>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
           ))}
         </div>
       </div>

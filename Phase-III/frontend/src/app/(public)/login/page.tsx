@@ -59,7 +59,7 @@ export default function LoginPage() {
                 {error}
               </div>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -72,7 +72,7 @@ export default function LoginPage() {
                 disabled={isLoading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -83,9 +83,10 @@ export default function LoginPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 disabled={isLoading}
+                autoComplete="current-password"
               />
             </div>
-            
+
             <Button
               type="submit"
               className="w-full bg-primary hover:bg-primary/90"
@@ -95,7 +96,7 @@ export default function LoginPage() {
               Sign In
             </Button>
           </form>
-          
+
           <div className="mt-4 text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{' '}
             <button

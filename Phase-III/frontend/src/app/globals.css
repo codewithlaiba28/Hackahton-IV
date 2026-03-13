@@ -1,63 +1,58 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    /* Backgrounds - Dark Theme */
-    --background: 0 0% 4%;
-    --foreground: 0 0% 94%;
-    
-    /* Cards */
-    --card: 0 0% 7%;
-    --card-foreground: 0 0% 94%;
-    
-    /* Popovers */
-    --popover: 0 0% 7%;
-    --popover-foreground: 0 0% 94%;
-    
-    /* Primary - Teal Green */
-    --primary: 164 100% 45%;
-    --primary-foreground: 0 0% 4%;
-    
-    /* Secondary - Electric Blue */
-    --secondary: 217 100% 50%;
-    --secondary-foreground: 0 0% 100%;
-    
-    /* Muted */
-    --muted: 0 0% 13%;
-    --muted-foreground: 0 0% 53%;
-    
-    /* Accent - Orange */
-    --accent: 24 89% 58%;
-    --accent-foreground: 0 0% 100%;
-    
-    /* Destructive */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-    
-    /* Borders */
-    --border: 0 0% 13%;
-    --input: 0 0% 13%;
-    --ring: 164 100% 45%;
-    
-    /* Radius */
-    --radius: 0.5rem;
-    
-    /* Custom Colors */
-    --bg-base: 0 0% 4%;
-    --bg-surface: 0 0% 7%;
-    --bg-elevated: 0 0% 10%;
-    --bg-overlay: 0 0% 13%;
-    
-    --text-primary: 0 0% 94%;
-    --text-secondary: 0 0% 53%;
-    --text-muted: 0 0% 33%;
-    
-    --success: 142 71% 45%;
-    --warning: 38 92% 50%;
-    --error: 0 84% 60%;
-    --info: 217 91% 60%;
+@theme {
+  --color-background: oklch(0.1 0.01 254);
+  --color-foreground: oklch(0.98 0.01 254);
+
+  --color-card: oklch(0.14 0.01 254);
+  --color-card-foreground: oklch(0.98 0.01 254);
+
+  --color-popover: oklch(0.12 0.01 254);
+  --color-popover-foreground: oklch(0.98 0.01 254);
+
+  --color-primary: oklch(0.7 0.15 175);
+  /* Futuristic Teal */
+  --color-primary-foreground: oklch(0.1 0.01 254);
+
+  --color-secondary: oklch(0.3 0.05 200);
+  /* Deep muted blue/dark */
+  --color-secondary-foreground: oklch(0.98 0.01 254);
+
+  --color-muted: oklch(0.2 0.01 254);
+  --color-muted-foreground: oklch(0.6 0.01 254);
+
+  --color-accent: oklch(0.7 0.15 175);
+  --color-accent-foreground: oklch(0.1 0.01 254);
+
+  --color-destructive: oklch(0.5 0.2 25);
+  --color-destructive-foreground: oklch(0.98 0.01 254);
+
+  --color-border: oklch(0.2 0.02 254);
+  --color-input: oklch(0.2 0.02 254);
+  --color-ring: oklch(0.7 0.15 175);
+
+  --color-success: oklch(0.75 0.15 150);
+  --color-warning: oklch(0.85 0.15 85);
+
+  /* Surface colors */
+  --color-bg-surface: oklch(0.14 0.01 254);
+  --color-bg-elevated: oklch(0.18 0.01 254);
+
+  --radius-lg: 1rem;
+  --radius-md: calc(var(--radius-lg) - 4px);
+  --radius-sm: calc(var(--radius-lg) - 8px);
+
+  /* Animations */
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+
+  @keyframes glow {
+    from {
+      box-shadow: 0 0 5px var(--color-primary), 0 0 10px var(--color-primary);
+    }
+
+    to {
+      box-shadow: 0 0 10px var(--color-primary), 0 0 20px var(--color-primary);
+    }
   }
 }
 
@@ -65,8 +60,11 @@
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    @apply antialiased;
   }
 }
 
@@ -77,14 +75,14 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--bg-surface));
+  background: hsl(0 0% 7%);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted));
+  background: hsl(0 0% 13%);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground));
+  background: hsl(0 0% 53%);
 }

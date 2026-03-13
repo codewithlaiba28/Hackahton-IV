@@ -28,7 +28,7 @@ export default function RegisterPage() {
     try {
       // First, register the user via API
       await api.auth.register(formData.email, formData.password, formData.name);
-      
+
       // Then, sign them in
       const result = await signIn('credentials', {
         email: formData.email,
@@ -65,7 +65,7 @@ export default function RegisterPage() {
                 {error}
               </div>
             )}
-            
+
             <div className="space-y-2">
               <Label htmlFor="name">Name</Label>
               <Input
@@ -78,7 +78,7 @@ export default function RegisterPage() {
                 disabled={isLoading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -91,7 +91,7 @@ export default function RegisterPage() {
                 disabled={isLoading}
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -102,9 +102,10 @@ export default function RegisterPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 required
                 disabled={isLoading}
+                autoComplete="new-password"
               />
             </div>
-            
+
             <Button
               type="submit"
               className="w-full bg-primary hover:bg-primary/90"
@@ -114,7 +115,7 @@ export default function RegisterPage() {
               Create Account
             </Button>
           </form>
-          
+
           <div className="mt-4 text-center text-sm text-muted-foreground">
             Already have an account?{' '}
             <button

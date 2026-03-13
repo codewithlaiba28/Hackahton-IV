@@ -24,9 +24,11 @@ export interface ChapterMeta {
   id: string;
   title: string;
   difficulty: 'beginner' | 'intermediate' | 'advanced';
-  estimated_read_time: number;
+  estimated_read_min: number;
   sequence_order: number;
   is_locked: boolean;
+  prev_chapter_id?: string;
+  next_chapter_id?: string;
 }
 
 export interface Chapter extends ChapterMeta {
@@ -36,17 +38,10 @@ export interface Chapter extends ChapterMeta {
 
 export interface ChapterDetail extends Chapter {
   content: string;
-  previous_chapter?: ChapterMeta;
-  next_chapter?: ChapterMeta;
 }
 
 export interface ChapterListResponse {
-  data: Chapter[];
-  meta: {
-    total: number;
-    free_chapters: number;
-    premium_chapters: number;
-  };
+  chapters: Chapter[];
 }
 
 // Quizzes

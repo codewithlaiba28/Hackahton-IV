@@ -19,7 +19,7 @@ export default function ChapterReaderPage() {
   const apiKey = (session?.user as any)?.apiKey;
   const userId = (session?.user as any)?.id;
 
-  const { data: chapterData, isLoading } = useChapter(params.chapter_id as string, apiKey);
+  const { data: chapterResponse, isLoading } = useChapter(params.chapter_id as string, apiKey);
   const updateProgress = useUpdateProgress();
 
   if (isLoading) {
@@ -31,7 +31,7 @@ export default function ChapterReaderPage() {
     );
   }
 
-  const chapter = chapterData?.data;
+  const chapter = chapterResponse?.data;
 
   if (!chapter) {
     return (
@@ -46,14 +46,14 @@ export default function ChapterReaderPage() {
 
   const handleMarkComplete = async () => {
     if (!userId) return;
-    
+
     await updateProgress.mutateAsync({
       userId,
       chapterId: chapter.id,
       status: 'completed',
       apiKey,
     });
-    
+
     router.push(`/course/${chapter.id}/quiz`);
   };
 
@@ -79,13 +79,12 @@ export default function ChapterReaderPage() {
         <div className="flex items-center gap-4 text-muted-foreground">
           <div className="flex items-center gap-1">
             <Clock className="h-4 w-4" />
-            {chapter.estimated_read_time} min read
+            {chapter.estimated_read_min || 0} min read
           </div>
-          <span className={`px-2 py-1 rounded text-xs ${
-            chapter.difficulty === 'beginner' ? 'bg-success/10 text-success' :
+          <span className={`px-2 py-1 rounded text-xs ${chapter.difficulty === 'beginner' ? 'bg-success/10 text-success' :
             chapter.difficulty === 'intermediate' ? 'bg-warning/10 text-warning' :
-            'bg-error/10 text-error'
-          }`}>
+              'bg-error/10 text-error'
+            }`}>
             {chapter.difficulty}
           </span>
         </div>
@@ -100,21 +99,21 @@ export default function ChapterReaderPage() {
 
       {/* Navigation Buttons */}
       <div className="flex items-center justify-between pt-8 border-t border-border">
-        {chapter.previous_chapter ? (
-          <Link href={`/course/${chapter.previous_chapter.id}`}>
+        {chapter.prev_chapter_id ? (
+          <Link href={`/course/${chapter.prev_chapter_id}`}>
             <Button variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Previous: {chapter.previous_chapter.title}
+              Previous Chapter
             </Button>
           </Link>
         ) : (
           <div />
         )}
 
-        {chapter.next_chapter ? (
-          <Link href={`/course/${chapter.next_chapter.id}`}>
-            <Button variant={chapter.next_chapter.is_locked ? 'outline' : 'default'}>
-              Next: {chapter.next_chapter.title}
+        {chapter.next_chapter_id ? (
+          <Link href={`/course/${chapter.next_chapter_id}`}>
+            <Button>
+              Next Chapter
               <ArrowRight className="h-4 w-4 ml-2" />
             </Button>
           </Link>

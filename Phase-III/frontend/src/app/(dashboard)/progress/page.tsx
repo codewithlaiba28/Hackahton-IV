@@ -4,7 +4,7 @@ import { useSession } from 'next-auth/react';
 import { useProgress } from '@/hooks/useProgress';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, Flame, BookOpen, Award, Calendar } from 'lucide-react';
+import { Trophy, Flame, BookOpen, Award, Calendar, Target, Zap, Clock } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -13,36 +13,41 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
+  Cell,
 } from 'recharts';
+import { motion } from 'framer-motion';
 
 export default function ProgressPage() {
   const { data: session } = useSession();
   const apiKey = (session?.user as any)?.apiKey;
   const userId = (session?.user as any)?.id;
 
-  const { data: progress, isLoading } = useProgress(userId, apiKey);
+  const { data: progressResponse, isLoading } = useProgress(userId, apiKey);
+  const progress = progressResponse?.data;
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-48" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="max-w-7xl mx-auto space-y-8 p-6 animate-pulse">
+        <Skeleton className="h-10 w-48 bg-white/5" />
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
+            <Skeleton key={i} className="h-32 rounded-2xl bg-white/5 border border-white/5" />
           ))}
         </div>
-        <Skeleton className="h-64 rounded-xl" />
+        <Skeleton className="h-80 rounded-2xl bg-white/5 border border-white/5" />
       </div>
     );
   }
 
   if (!progress || progress.chapters_completed === 0) {
     return (
-      <div className="text-center py-12">
-        <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-        <h2 className="text-2xl font-bold mb-2">No Progress Yet</h2>
-        <p className="text-muted-foreground mb-4">
-          Complete your first chapter to see your progress analytics
+      <div className="flex flex-col items-center justify-center py-24 text-center">
+        <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/5">
+          <BookOpen className="h-10 w-10 text-white/20" />
+        </div>
+        <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">No Uplink Established</h2>
+        <p className="text-white/40 text-sm font-medium max-w-xs uppercase tracking-wider">
+          Complete your first chapter to initialize progress systems.
         </p>
       </div>
     );
@@ -60,142 +65,161 @@ export default function ProgressPage() {
     }));
 
   const badges = [
-    { name: 'First Quiz', icon: '🎯', earned: progress.best_quiz_score > 0 },
-    { name: '7-Day Streak', icon: '🔥', earned: progress.current_streak >= 7 },
-    { name: 'First Chapter', icon: '📚', earned: progress.chapters_completed >= 1 },
-    { name: 'Halfway There', icon: '⭐', earned: progress.chapters_completed >= 3 },
-    { name: 'Course Complete', icon: '🏆', earned: progress.chapters_completed >= 5 },
+    { name: 'First Quiz', icon: Target, earned: progress.best_quiz_score > 0 },
+    { name: '7-Day Streak', icon: Flame, earned: progress.current_streak >= 7 },
+    { name: 'First Chapter', icon: BookOpen, earned: progress.chapters_completed >= 1 },
+    { name: 'Halfway There', icon: Zap, earned: progress.chapters_completed >= 3 },
+    { name: 'Course Complete', icon: Trophy, earned: progress.chapters_completed >= 5 },
+  ];
+
+  const mainStats = [
+    { label: 'Chapters', value: `${progress.chapters_completed}/${progress.total_chapters}`, icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: 'Current Streak', value: `${progress.current_streak} days`, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { label: 'Best Score', value: `${progress.best_quiz_score}%`, icon: Trophy, color: 'text-accent', bg: 'bg-accent/10' },
+    { label: 'Study Time', value: `${Math.floor(progress.total_study_time / 60)}h ${progress.total_study_time % 60}m`, icon: Clock, color: 'text-info', bg: 'bg-info/10' },
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Your Progress</h1>
-        <p className="text-muted-foreground">
-          Track your learning journey and achievements
+    <div className="max-w-7xl mx-auto space-y-10 py-6 px-4">
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+      >
+        <h1 className="text-4xl font-black text-white uppercase tracking-tighter mb-2">Performance <span className="text-primary">Sync</span></h1>
+        <p className="text-xs font-medium text-white/40 uppercase tracking-widest leading-loose">
+          Real-time tracking of your cognitive development and course mastery.
         </p>
-      </div>
+      </motion.div>
 
       {/* Stats Overview */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-bg-surface border-border">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 rounded-full">
-                <BookOpen className="h-6 w-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Chapters</p>
-                <p className="text-2xl font-bold">{progress.chapters_completed}/{progress.total_chapters}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-bg-surface border-border">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-accent/10 rounded-full">
-                <Flame className="h-6 w-6 text-accent" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Current Streak</p>
-                <p className="text-2xl font-bold">{progress.current_streak} days</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-bg-surface border-border">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-success/10 rounded-full">
-                <Trophy className="h-6 w-6 text-success" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Best Score</p>
-                <p className="text-2xl font-bold">{progress.best_quiz_score}%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-bg-surface border-border">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-info/10 rounded-full">
-                <Award className="h-6 w-6 text-info" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Study Time</p>
-                <p className="text-2xl font-bold">{Math.floor(progress.total_study_time / 60)}h {progress.total_study_time % 60}m</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {mainStats.map((stat, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: idx * 0.1 }}
+          >
+            <Card className="bg-white/5 border-white/5 hover:border-primary/20 transition-all rounded-2xl overflow-hidden group">
+              <CardContent className="pt-8 pb-8 px-6">
+                <div className="flex items-center gap-5">
+                  <div className={`p-4 ${stat.bg} rounded-2xl border border-white/5 transition-transform group-hover:scale-110`}>
+                    <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">{stat.label}</p>
+                    <p className="text-2xl font-black text-white tracking-tighter">{stat.value}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
       {/* Study Activity Chart */}
-      <Card className="bg-bg-surface border-border">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Calendar className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-xl font-semibold">Study Activity (Last 7 Days)</h2>
-          </div>
-          
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="date" stroke="#888" />
-                <YAxis stroke="#888" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#111',
-                    border: '1px solid #2A2A2A',
-                    borderRadius: '8px',
-                  }}
-                />
-                <Bar dataKey="chapters" fill="#00E5B4" name="Chapters" />
-                <Bar dataKey="studyTime" fill="#0066FF" name="Study Time (hrs)" />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              No activity data yet
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.4 }}
+      >
+        <Card className="bg-white/5 border-white/5 rounded-2xl overflow-hidden">
+          <CardContent className="p-8">
+            <div className="flex items-center gap-3 mb-10">
+              <Calendar className="h-5 w-5 text-primary" />
+              <h2 className="text-xs font-black text-white uppercase tracking-widest">Temporal Activity (Last 7 Cycles)</h2>
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {chartData.length > 0 ? (
+              <div className="h-[350px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <CartesianGrid vertical={false} stroke="#ffffff05" strokeDasharray="3 3" />
+                    <XAxis
+                      dataKey="date"
+                      stroke="#ffffff20"
+                      fontSize={10}
+                      fontWeight={900}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#ffffff40' }}
+                    />
+                    <YAxis
+                      stroke="#ffffff20"
+                      fontSize={10}
+                      fontWeight={900}
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fill: '#ffffff40' }}
+                    />
+                    <Tooltip
+                      cursor={{ fill: 'rgba(255,255,255,0.03)' }}
+                      contentStyle={{
+                        backgroundColor: '#0F0F0B',
+                        border: '1px solid rgba(255,255,255,0.05)',
+                        borderRadius: '12px',
+                        boxShadow: '0 10px 30px rgba(0,0,0,0.5)'
+                      }}
+                      itemStyle={{ fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
+                    />
+                    <Bar dataKey="chapters" radius={[4, 4, 0, 0]} name="Chapters">
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill="#00E5B4" opacity={0.6 + (index / 10)} />
+                      ))}
+                    </Bar>
+                    <Bar dataKey="studyTime" radius={[4, 4, 0, 0]} name="Hours">
+                      {chartData.map((entry, index) => (
+                        <Cell key={`cell-study-${index}`} fill="#0066FF" opacity={0.6 + (index / 10)} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <div className="text-center py-12 text-white/20 uppercase tracking-widest text-[10px] font-black">
+                Insufficient Data Logged
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Achievement Badges */}
-      <Card className="bg-bg-surface border-border">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Award className="h-5 w-5 text-muted-foreground" />
-            <h2 className="text-xl font-semibold">Achievements</h2>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+      >
+        <Card className="bg-white/5 border-white/5 rounded-2xl overflow-hidden p-8">
+          <div className="flex items-center gap-3 mb-10">
+            <Award className="h-5 w-5 text-accent" />
+            <h2 className="text-xs font-black text-white uppercase tracking-widest">Milestone Clearance</h2>
           </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-            {badges.map((badge) => (
+
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-6">
+            {badges.map((badge, i) => (
               <div
                 key={badge.name}
-                className={`p-4 rounded-lg border text-center transition-all ${
-                  badge.earned
-                    ? 'bg-primary/10 border-primary'
-                    : 'bg-bg-elevated border-border opacity-50'
-                }`}
+                className={`group relative p-6 rounded-2xl border text-center transition-all ${badge.earned
+                  ? 'bg-primary/5 border-primary/20'
+                  : 'bg-white/5 border-white/5 opacity-30 grayscale'
+                  }`}
               >
-                <div className="text-4xl mb-2">{badge.icon}</div>
-                <p className="text-sm font-medium">{badge.name}</p>
+                <div className={`w-14 h-14 mx-auto mb-4 rounded-xl flex items-center justify-center transition-transform group-hover:scale-110 ${badge.earned ? 'bg-primary/10 border border-primary/20' : 'bg-white/5 border border-white/5'}`}>
+                  <badge.icon className={`w-6 h-6 ${badge.earned ? 'text-primary' : 'text-white/40'}`} />
+                </div>
+                <p className="text-[10px] font-black text-white uppercase tracking-tight">{badge.name}</p>
                 {!badge.earned && (
-                  <p className="text-xs text-muted-foreground mt-1">Locked</p>
+                  <p className="text-[8px] font-medium text-white/20 uppercase tracking-widest mt-1">Locked</p>
+                )}
+                {badge.earned && (
+                  <div className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_8px_var(--color-primary)]" />
                 )}
               </div>
             ))}
           </div>
-        </CardContent>
-      </Card>
+        </Card>
+      </motion.div>
     </div>
   );
 }
