@@ -3,7 +3,7 @@ Authentication router for Phase 3.
 Handles user registration and login.
 """
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 import secrets
@@ -44,7 +44,7 @@ def hash_password(password: str, salt: str = None) -> tuple[str, str]:
 
 
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
-async def register(request: RegisterRequest, db: AsyncSession = None):
+async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """
     Register a new user.
     
@@ -90,13 +90,13 @@ async def register(request: RegisterRequest, db: AsyncSession = None):
     return AuthResponse(
         user_id=str(new_user.id),
         api_key=new_user.api_key,
-        tier=new_user.tier.value,
+        tier=str(new_user.tier),
         name=new_user.name,
     )
 
 
 @router.post("/login", response_model=AuthResponse)
-async def login(request: LoginRequest, db: AsyncSession = None):
+async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     """
     Login with email and password.
     
@@ -130,6 +130,6 @@ async def login(request: LoginRequest, db: AsyncSession = None):
     return AuthResponse(
         user_id=str(user.id),
         api_key=user.api_key,
-        tier=user.tier.value,
+        tier=str(user.tier),
         name=user.name,
     )

@@ -35,7 +35,7 @@ async def list_chapters(
     chapters = result.scalars().all()
     
     # Convert to response schema with is_locked flag
-    is_premium = current_user.tier.value in ["premium", "pro"]
+    is_premium = str(current_user.tier) in ["premium", "pro"]
     chapter_items = []
     
     for chapter in chapters:

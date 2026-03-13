@@ -28,8 +28,11 @@ class User(Base):
         default=uuid.uuid4,
         index=True
     )
-    api_key: Mapped[str] = mapped_column(String(64), unique=True, nullable=False, index=True)
+    api_key: Mapped[str] = mapped_column(String(128), unique=True, nullable=False, index=True)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False)
+    name: Mapped[str] = mapped_column(String(255), nullable=True)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=True)
+    password_salt: Mapped[str] = mapped_column(String(255), nullable=True)
     tier: Mapped[UserTier] = mapped_column(
         String(20),
         nullable=False,

@@ -5,6 +5,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from datetime import datetime
 
 from app.config import get_settings
 from app.database import init_db, close_db
@@ -35,9 +36,13 @@ app = FastAPI(
 )
 
 # Configure CORS
-# In development, allow all origins for testing. In production, restrict to ChatGPT.
+# In development, allow frontend explicitly for credentials support
 if settings.APP_ENV == "development":
-    allow_origins = ["*"]
+    allow_origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000"
+    ]
 else:
     allow_origins = [settings.CHATGPT_APP_ORIGIN]
 
@@ -55,7 +60,6 @@ app.add_middleware(
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "environment": settings.APP_ENV}
-
 
 # Include routers
 app.include_router(auth.router, tags=["Phase 3: Authentication"])
