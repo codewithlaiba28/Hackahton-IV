@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { useUIStore } from '@/store/useUIStore';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
+import UpgradeModal from '@/components/premium/UpgradeModal';
+import { useUpgrade } from '@/hooks/useUser';
 
 export default function DashboardLayout({
   children,
@@ -14,8 +16,9 @@ export default function DashboardLayout({
 }) {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { isSidebarOpen } = useUIStore();
+  const { isSidebarOpen, isUpgradeModalOpen, closeUpgradeModal } = useUIStore();
   const [mounted, setMounted] = useState(false);
+  const upgradeMutation = useUpgrade();
 
   useEffect(() => {
     setMounted(true);
@@ -49,15 +52,26 @@ export default function DashboardLayout({
       <div className="flex">
         <Sidebar />
         <main
-          className={`flex-1 transition-all duration-300 ${
-            isSidebarOpen ? 'ml-64' : 'ml-0'
-          }`}
+          className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'
+            }`}
         >
           <div className="p-6">
             {children}
           </div>
         </main>
       </div>
+      <UpgradeModal
+        isOpen={isUpgradeModalOpen}
+        onClose={closeUpgradeModal}
+        isLoading={upgradeMutation.isPending}
+        onUpgrade={() => {
+          upgradeMutation.mutate(undefined, {
+            onSuccess: () => {
+              closeUpgradeModal();
+            }
+          });
+        }}
+      />
     </div>
   );
 }

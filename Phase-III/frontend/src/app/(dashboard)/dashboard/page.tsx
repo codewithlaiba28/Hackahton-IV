@@ -16,8 +16,10 @@ export default function DashboardPage() {
   const apiKey = (session?.user as any)?.apiKey;
   const userId = (session?.user as any)?.id;
 
-  const { data: progress, isLoading: progressLoading } = useProgress(userId, apiKey);
+  const { data: progressResponse, isLoading: progressLoading } = useProgress(userId, apiKey);
   const { data: chaptersData, isLoading: chaptersLoading } = useChapters(apiKey);
+
+  const progress = progressResponse?.data;
 
   if (progressLoading || chaptersLoading) {
     return (
@@ -33,14 +35,14 @@ export default function DashboardPage() {
     );
   }
 
-  const chapters = chaptersData?.data || [];
-  const nextChapter = chapters.find((ch) => ch.status === 'in_progress') || chapters[0];
+  const chapters = chaptersData?.data?.chapters || [];
+  const nextChapter = (chapters as any[]).find((ch) => ch.status === 'in_progress') || chapters[0];
 
   const stats = [
-    { label: 'Chapters Done', value: `${progress?.chapters_completed || 0}/${progress?.total_chapters || 5}`, icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: 'Chapters Done', value: `${progress?.chapters_completed?.length || 0}/${progress?.total_chapters || 5}`, icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10' },
     { label: 'Avg Quiz Score', value: `${progress?.best_quiz_score || 0}%`, icon: Award, color: 'text-accent', bg: 'bg-accent/10' },
     { label: 'Learning Time', value: `${Math.floor((progress?.total_study_time || 0) / 60)}H ${progress?.total_study_time ? (progress.total_study_time % 60) : 0}M`, icon: Clock, color: 'text-info', bg: 'bg-info/10' },
-    { label: 'Mastery Level', value: `${progress?.overall_progress || 0}%`, icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
+    { label: 'Mastery Level', value: `${progress?.overall_percentage || 0}%`, icon: TrendingUp, color: 'text-success', bg: 'bg-success/10' },
   ];
 
   return (
@@ -119,12 +121,12 @@ export default function DashboardPage() {
                 <div className="space-y-3 relative z-10">
                   <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-white/50">
                     <span>Course Progress</span>
-                    <span>{progress?.overall_progress || 0}%</span>
+                    <span>{progress?.overall_percentage || 0}%</span>
                   </div>
                   <div className="h-3 bg-white/5 rounded-full overflow-hidden border border-white/5">
                     <motion.div
                       initial={{ width: 0 }}
-                      animate={{ width: `${progress?.overall_progress || 0}%` }}
+                      animate={{ width: `${progress?.overall_percentage || 0}%` }}
                       transition={{ duration: 1, ease: 'easeOut' }}
                       className="h-full bg-primary shadow-[0_0_10px_var(--color-primary)]"
                     />

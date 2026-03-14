@@ -9,6 +9,7 @@ interface UpgradeModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpgrade: () => void;
+  isLoading?: boolean;
 }
 
 const premiumFeatures = [
@@ -20,7 +21,7 @@ const premiumFeatures = [
   'Certificate of completion',
 ];
 
-export default function UpgradeModal({ isOpen, onClose, onUpgrade }: UpgradeModalProps) {
+export default function UpgradeModal({ isOpen, onClose, onUpgrade, isLoading }: UpgradeModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl bg-bg-surface border-border">
@@ -55,9 +56,17 @@ export default function UpgradeModal({ isOpen, onClose, onUpgrade }: UpgradeModa
             </Button>
             <Button
               onClick={onUpgrade}
+              disabled={isLoading}
               className="flex-1 bg-primary hover:bg-primary/90"
             >
-              Upgrade Now
+              {isLoading ? (
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin" />
+                  <span>Upgrading...</span>
+                </div>
+              ) : (
+                'Upgrade Now'
+              )}
             </Button>
           </div>
 

@@ -74,15 +74,16 @@ export interface DailyActivity {
 }
 
 export interface ProgressSummary {
-  user_id: string;
-  chapters_completed: number;
+  chapters_completed: string[];
+  chapters_in_progress: string[];
+  overall_percentage: number;
+  current_streak_days: number;
+  longest_streak_days: number;
   total_chapters: number;
-  overall_progress: number;
   best_quiz_score: number;
   total_study_time: number;
-  current_streak: number;
-  longest_streak: number;
   daily_activity: DailyActivity[];
+  last_activity_date?: string;
 }
 
 // Adaptive Learning Path (Phase 2)
@@ -105,22 +106,27 @@ export interface AdaptiveRecommendation {
 
 // Assessments (Phase 2)
 export interface AssessmentQuestion {
-  id: string;
-  chapter_id: string;
+  question_id: string;
   question_text: string;
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  word_count_min: number;
-  word_count_max: number;
+  difficulty: string;
 }
 
 export interface AssessmentResult {
-  question_id: string;
   score: number;
-  grade: 'A' | 'B' | 'C' | 'D' | 'F';
+  grade: string;
   correct_concepts: string[];
   missing_concepts: string[];
   feedback: string;
-  improvement_suggestions: string[];
+  improvement_suggestions: string;
+  word_count: number;
+}
+
+export interface AssessmentResultSummary {
+  result_id: string;
+  question_text: string;
+  score: number;
+  grade: string;
+  submitted_at: string;
 }
 
 // LLM Usage (Phase 2)

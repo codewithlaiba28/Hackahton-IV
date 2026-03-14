@@ -6,7 +6,7 @@ import { useChapter } from '@/hooks/useChapters';
 import { useUpdateProgress } from '@/hooks/useProgress';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { CheckCircle, ArrowLeft, ArrowRight, BookOpen, Clock } from 'lucide-react';
+import { CheckCircle, ArrowLeft, ArrowRight, BookOpen, Clock, Sparkles } from 'lucide-react';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
@@ -18,6 +18,7 @@ export default function ChapterReaderPage() {
   const { data: session } = useSession();
   const apiKey = (session?.user as any)?.apiKey;
   const userId = (session?.user as any)?.id;
+  const userTier = (session?.user as any)?.tier;
 
   const { data: chapterResponse, isLoading } = useChapter(params.chapter_id as string, apiKey);
   const updateProgress = useUpdateProgress();
@@ -98,31 +99,57 @@ export default function ChapterReaderPage() {
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex items-center justify-between pt-8 border-t border-border">
-        {chapter.prev_chapter_id ? (
-          <Link href={`/course/${chapter.prev_chapter_id}`}>
-            <Button variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Previous Chapter
-            </Button>
-          </Link>
-        ) : (
-          <div />
-        )}
+      <div className="flex flex-col gap-6 pt-8 border-t border-border">
+        <div className="flex items-center justify-between">
+          {chapter.prev_chapter_id ? (
+            <Link href={`/course/${chapter.prev_chapter_id}`}>
+              <Button variant="outline">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Previous Chapter
+              </Button>
+            </Link>
+          ) : (
+            <div />
+          )}
 
-        {chapter.next_chapter_id ? (
-          <Link href={`/course/${chapter.next_chapter_id}`}>
-            <Button>
-              Next Chapter
-              <ArrowRight className="h-4 w-4 ml-2" />
+          <div className="flex gap-4">
+            {(userTier === 'premium' || userTier === 'pro') && (
+              <Link href={`/course/${chapter.id}/assessment`}>
+                <Button variant="outline" className="border-accent/40 text-accent hover:bg-accent/10">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Take Assessment
+                </Button>
+              </Link>
+            )}
+
+            <Button onClick={handleMarkComplete} variant="secondary">
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Mark as Complete
             </Button>
-          </Link>
-        ) : (
-          <Button onClick={handleMarkComplete}>
-            <CheckCircle className="h-4 w-4 mr-2" />
-            Mark as Complete
-          </Button>
-        )}
+
+            <Link href={`/course/${chapter.id}/quiz`}>
+              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8">
+                Take Quiz
+                <Sparkles className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+
+          {chapter.next_chapter_id ? (
+            <Link href={`/course/${chapter.next_chapter_id}`}>
+              <Button variant="outline">
+                Next Chapter
+                <ArrowRight className="h-4 w-4 ml-2" />
+              </Button>
+            </Link>
+          ) : (
+            <div />
+          )}
+        </div>
+
+        <div className="text-center text-sm text-muted-foreground">
+          Tip: Complete the chapter and pass the quiz to unlock the next one!
+        </div>
       </div>
     </div>
   );

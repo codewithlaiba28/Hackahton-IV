@@ -14,13 +14,13 @@ export function useQuiz(chapterId: string, apiKey?: string) {
 
 export function useSubmitQuiz() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: ({ chapterId, answers, apiKey }: {
       chapterId: string;
-      answers: QuizSubmission;
+      answers: Record<string, number>;
       apiKey?: string;
-    }) => api.quizzes.submit(chapterId, answers, apiKey),
+    }) => api.quizzes.submit(chapterId, { answers }, apiKey),
     onSuccess: (data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['quiz', variables.chapterId] });
       queryClient.invalidateQueries({ queryKey: ['progress'] });

@@ -1,12 +1,15 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { useUIStore } from '@/store/useUIStore';
+import { useUserProfile } from '@/hooks/useUser';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
   BookOpen,
   TrendingUp,
+  Search,
   Compass,
   Settings,
   Sparkles,
@@ -18,13 +21,19 @@ const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/course', label: 'Course', icon: BookOpen },
   { href: '/progress', label: 'Progress', icon: TrendingUp },
+  { href: '/search', label: 'Search', icon: Search },
   { href: '/learning-path', label: 'Learning Path', icon: Compass, premium: true },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { isSidebarOpen } = useUIStore();
+  const { data: session } = useSession();
+  const { isSidebarOpen, openUpgradeModal } = useUIStore();
+  const { data: userProfile } = useUserProfile();
+
+  const userTier = userProfile?.tier || (session?.user as any)?.tier || 'free';
+  const isPremium = ['premium', 'pro'].includes(userTier.toLowerCase());
 
   if (!isSidebarOpen) {
     return null;
@@ -64,23 +73,28 @@ export default function Sidebar() {
         })}
       </nav>
 
-      <div className="absolute bottom-6 left-6 right-6">
-        <div className="relative rounded-2xl border border-primary/20 bg-primary/5 p-5 overflow-hidden group">
-          <div className="absolute -top-8 -right-8 w-24 h-24 bg-primary/10 blur-2xl group-hover:bg-primary/20 transition-all" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 mb-3">
-              <Zap className="w-4 h-4 text-primary fill-primary" />
-              <h4 className="text-xs font-black text-white uppercase tracking-tighter">Pro Status</h4>
+      {!isPremium && (
+        <div className="absolute bottom-6 left-6 right-6">
+          <div className="relative rounded-2xl border border-primary/20 bg-primary/5 p-5 overflow-hidden group">
+            <div className="absolute -top-8 -right-8 w-24 h-24 bg-primary/10 blur-2xl group-hover:bg-primary/20 transition-all" />
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-3">
+                <Zap className="w-4 h-4 text-primary fill-primary" />
+                <h4 className="text-xs font-black text-white uppercase tracking-tighter">Pro Status</h4>
+              </div>
+              <p className="text-[10px] font-medium text-white/40 mb-4 leading-relaxed">
+                Unlock adaptive learning paths and AI-graded assessments.
+              </p>
+              <button
+                onClick={openUpgradeModal}
+                className="w-full text-[10px] font-black uppercase tracking-widest bg-primary text-primary-foreground py-2.5 rounded-xl hover:bg-primary/90 transition-all shadow-[0_0_15px_var(--color-primary)]"
+              >
+                Upgrade Now
+              </button>
             </div>
-            <p className="text-[10px] font-medium text-white/40 mb-4 leading-relaxed">
-              Unlock adaptive learning paths and AI-graded assessments.
-            </p>
-            <button className="w-full text-[10px] font-black uppercase tracking-widest bg-primary text-primary-foreground py-2.5 rounded-xl hover:bg-primary/90 transition-all shadow-[0_0_15px_var(--color-primary)]">
-              Upgrade Now
-            </button>
           </div>
         </div>
-      </div>
+      )}
     </aside>
   );
 }

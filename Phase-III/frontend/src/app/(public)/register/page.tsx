@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,12 +12,31 @@ import { api } from '@/lib/api';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/dashboard');
+    }
+  }, [status, router]);
+
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Checking session...</p>
+        </div>
+      </div>
+    );
+  }
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
+    tier: 'free',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -27,7 +46,7 @@ export default function RegisterPage() {
 
     try {
       // First, register the user via API
-      await api.auth.register(formData.email, formData.password, formData.name);
+      await api.auth.register(formData.email, formData.password, formData.name, formData.tier);
 
       // Then, sign them in
       const result = await signIn('credentials', {
@@ -104,6 +123,33 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 autoComplete="new-password"
               />
+            </div>
+
+            <div className="space-y-3">
+              <Label>Select Tier</Label>
+              <div className="grid grid-cols-2 gap-4">
+                <div
+                  onClick={() => setFormData({ ...formData, tier: 'free' })}
+                  className={`cursor-pointer p-4 rounded-xl border-2 transition-all ${formData.tier === 'free'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-white/5 bg-white/5 opacity-50'
+                    }`}
+                >
+                  <p className="text-xs font-black uppercase tracking-tight text-white mb-1">Standard</p>
+                  <p className="text-[10px] text-white/40 font-medium uppercase tracking-widest">Free Access</p>
+                </div>
+                <div
+                  onClick={() => setFormData({ ...formData, tier: 'premium' })}
+                  className={`cursor-pointer p-4 rounded-xl border-2 transition-all relative overflow-hidden ${formData.tier === 'premium'
+                      ? 'border-accent bg-accent/5'
+                      : 'border-white/5 bg-white/5 opacity-50'
+                    }`}
+                >
+                  <div className="absolute top-0 right-0 p-1 bg-accent text-[8px] font-bold text-black uppercase tracking-tighter">Recommended</div>
+                  <p className="text-xs font-black uppercase tracking-tight text-accent mb-1">Premium</p>
+                  <p className="text-[10px] text-white/40 font-medium uppercase tracking-widest">Full Access</p>
+                </div>
+              </div>
             </div>
 
             <Button

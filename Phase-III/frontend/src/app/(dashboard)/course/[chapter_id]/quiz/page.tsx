@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Clock, CheckCircle, XCircle, Trophy, ArrowRight } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Trophy, ArrowRight, Sparkles } from 'lucide-react';
 import QuizResults from '@/components/quiz/QuizResults';
+import { useUIStore } from '@/store/useUIStore';
 
 type QuizState = 'start' | 'taking' | 'submitting' | 'results';
 
@@ -22,6 +23,7 @@ export default function QuizPage() {
 
   const { data: questions, isLoading } = useQuiz(chapterId, apiKey);
   const submitQuiz = useSubmitQuiz();
+  const { openUpgradeModal } = useUIStore();
 
   const [quizState, setQuizState] = useState<QuizState>('start');
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -33,6 +35,48 @@ export default function QuizPage() {
       <div className="space-y-6">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-64 rounded-xl" />
+      </div>
+    );
+  }
+
+  // Premium Gating
+  const userTier = (session?.user as any)?.tier || 'free';
+  const isPremium = ['premium', 'pro'].includes(userTier.toLowerCase());
+
+  if (!isPremium) {
+    return (
+      <div className="max-w-xl mx-auto py-12 px-4 text-center">
+        <div className="bg-bg-surface border border-border p-12 rounded-3xl space-y-8 relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+          <div className="w-24 h-24 bg-accent/10 rounded-full flex items-center justify-center mx-auto border border-accent/20 relative">
+            <Sparkles className="h-10 w-10 text-accent animate-pulse" />
+            <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full" />
+          </div>
+
+          <div className="space-y-4 relative">
+            <h2 className="text-3xl font-black text-white uppercase tracking-tighter italic">Neural Link <span className="text-accent">Encryption</span></h2>
+            <p className="text-sm font-medium text-white/60 leading-relaxed max-w-sm mx-auto uppercase tracking-wide">
+              Advanced cognitive assessments are reserved for top-tier operatives. Upgrade your clearance level to unlock neural synchronization.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-3 relative">
+            <Button
+              onClick={openUpgradeModal}
+              className="w-full bg-accent hover:bg-accent/90 text-black font-black uppercase tracking-widest py-6"
+            >
+              Initialize Upgrade
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => router.push(`/course/${chapterId}`)}
+              className="text-[10px] font-black uppercase tracking-widest text-white/40 hover:text-white"
+            >
+              Return to Chapter
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -67,7 +111,7 @@ export default function QuizPage() {
   const handleNextQuestion = () => {
     const question = quizQuestions[currentQuestion];
     setAnswers(prev => ({ ...prev, [question.id]: selectedAnswer! }));
-    
+
     if (currentQuestion < quizQuestions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
       setSelectedAnswer(null);
@@ -155,11 +199,10 @@ export default function QuizPage() {
                 <button
                   key={index}
                   onClick={() => handleSelectAnswer(index)}
-                  className={`w-full p-4 text-left rounded-lg border transition-all ${
-                    selectedAnswer === index
-                      ? 'border-primary bg-primary/10'
-                      : 'border-border hover:border-primary/50'
-                  }`}
+                  className={`w-full p-4 text-left rounded-lg border transition-all ${selectedAnswer === index
+                    ? 'border-primary bg-primary/10'
+                    : 'border-border hover:border-primary/50'
+                    }`}
                 >
                   <span className="font-medium mr-2">
                     {String.fromCharCode(65 + index)}.

@@ -2,9 +2,11 @@
 
 import { useSession } from 'next-auth/react';
 import { useProgress } from '@/hooks/useProgress';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Trophy, Flame, BookOpen, Award, Calendar, Target, Zap, Clock } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { BookOpen, Target, Trophy, Flame, Zap, Clock, TrendingUp, Award, Calendar } from 'lucide-react';
 import {
   BarChart,
   Bar,
@@ -16,11 +18,15 @@ import {
   Cell,
 } from 'recharts';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { useUIStore } from '@/store/useUIStore';
 
 export default function ProgressPage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const apiKey = (session?.user as any)?.apiKey;
   const userId = (session?.user as any)?.id;
+  const { openUpgradeModal } = useUIStore();
 
   const { data: progressResponse, isLoading } = useProgress(userId, apiKey);
   const progress = progressResponse?.data;
@@ -39,22 +45,30 @@ export default function ProgressPage() {
     );
   }
 
-  if (!progress || progress.chapters_completed === 0) {
+  if (!progress || (progress.chapters_completed?.length || 0) === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-center">
         <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 border border-white/5">
           <BookOpen className="h-10 w-10 text-white/20" />
         </div>
         <h2 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">No Uplink Established</h2>
-        <p className="text-white/40 text-sm font-medium max-w-xs uppercase tracking-wider">
+        <p className="text-white/40 text-sm font-medium max-w-xs uppercase tracking-wider mb-8">
           Complete your first chapter to initialize progress systems.
         </p>
+        {session?.user && (session.user as any).tier === 'free' && (
+          <Button
+            onClick={openUpgradeModal}
+            className="bg-accent text-black font-bold uppercase tracking-widest px-8"
+          >
+            Upgrade Clearance
+          </Button>
+        )}
       </div>
     );
   }
 
   // Prepare chart data
-  const chartData = progress.daily_activity
+  const chartData = (progress.daily_activity || [])
     .slice(-7)
     .map((activity) => ({
       date: new Date(activity.date).toLocaleDateString('en-US', {
@@ -65,18 +79,18 @@ export default function ProgressPage() {
     }));
 
   const badges = [
-    { name: 'First Quiz', icon: Target, earned: progress.best_quiz_score > 0 },
-    { name: '7-Day Streak', icon: Flame, earned: progress.current_streak >= 7 },
-    { name: 'First Chapter', icon: BookOpen, earned: progress.chapters_completed >= 1 },
-    { name: 'Halfway There', icon: Zap, earned: progress.chapters_completed >= 3 },
-    { name: 'Course Complete', icon: Trophy, earned: progress.chapters_completed >= 5 },
+    { name: 'First Quiz', icon: Target, earned: (progress.best_quiz_score || 0) > 0 },
+    { name: '7-Day Streak', icon: Flame, earned: (progress.current_streak_days || 0) >= 7 },
+    { name: 'First Chapter', icon: BookOpen, earned: (progress.chapters_completed?.length || 0) >= 1 },
+    { name: 'Halfway There', icon: Zap, earned: (progress.chapters_completed?.length || 0) >= 3 },
+    { name: 'Course Complete', icon: Trophy, earned: (progress.chapters_completed?.length || 0) >= 5 },
   ];
 
   const mainStats = [
-    { label: 'Chapters', value: `${progress.chapters_completed}/${progress.total_chapters}`, icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10' },
-    { label: 'Current Streak', value: `${progress.current_streak} days`, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-    { label: 'Best Score', value: `${progress.best_quiz_score}%`, icon: Trophy, color: 'text-accent', bg: 'bg-accent/10' },
-    { label: 'Study Time', value: `${Math.floor(progress.total_study_time / 60)}h ${progress.total_study_time % 60}m`, icon: Clock, color: 'text-info', bg: 'bg-info/10' },
+    { label: 'Chapters', value: `${progress.chapters_completed?.length || 0}/${progress.total_chapters || 0}`, icon: BookOpen, color: 'text-primary', bg: 'bg-primary/10' },
+    { label: 'Current Streak', value: `${progress.current_streak_days || 0} days`, icon: Flame, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+    { label: 'Best Score', value: `${progress.best_quiz_score || 0}%`, icon: Trophy, color: 'text-accent', bg: 'bg-accent/10' },
+    { label: 'Study Time', value: `${Math.floor((progress.total_study_time || 0) / 60)}h ${(progress.total_study_time || 0) % 60}m`, icon: Clock, color: 'text-info', bg: 'bg-info/10' },
   ];
 
   return (

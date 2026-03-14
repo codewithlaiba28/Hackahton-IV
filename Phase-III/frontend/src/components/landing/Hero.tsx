@@ -1,15 +1,78 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, Zap, Bot, Cpu, Layers } from 'lucide-react';
+import {
+  Sparkles,
+  ArrowRight,
+  Zap,
+  Bot,
+  Cpu,
+  Layers,
+  LogOut,
+  LayoutDashboard
+} from 'lucide-react';
+import Link from 'next/link';
 
 export default function Hero() {
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden bg-background pt-32 pb-24">
+      {/* Navigation Bar */}
+      <div className="absolute top-0 left-0 right-0 z-50 p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-[0_0_15px_rgba(var(--primary),0.5)]">
+            <Bot className="w-6 h-6 text-primary-foreground" />
+          </div>
+          <span className="text-xl font-bold text-white tracking-tighter">Companion<span className="text-primary">FTE</span></span>
+        </div>
+
+        <div className="flex items-center gap-4">
+          {status === 'loading' ? (
+            <div className="w-20 h-8 animate-pulse bg-white/5 rounded-lg" />
+          ) : session ? (
+            <>
+              <Button
+                variant="ghost"
+                className="text-white/70 hover:text-white hover:bg-white/5 font-semibold"
+                onClick={() => router.push('/dashboard')}
+              >
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+              <Button
+                variant="outline"
+                className="border-white/10 text-white hover:bg-white/5 font-semibold rounded-xl"
+                onClick={() => signOut({ callbackUrl: '/' })}
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                className="text-white/70 hover:text-white hover:bg-white/5 font-semibold"
+                onClick={() => router.push('/login')}
+              >
+                Sign In
+              </Button>
+              <Button
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold rounded-xl shadow-[0_0_10px_rgba(var(--primary),0.3)] transition-all"
+                onClick={() => router.push('/register')}
+              >
+                Sign Up
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
       {/* Background Glows */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-primary/10 rounded-[100%] blur-[120px] pointer-events-none" />
 
@@ -59,9 +122,9 @@ export default function Hero() {
           <Button
             size="lg"
             className="h-14 px-8 bg-primary hover:bg-primary/90 text-primary-foreground hover:text-primary-foreground font-bold rounded-xl shadow-[0_0_15px_var(--color-primary)] transition-all hover:scale-105"
-            onClick={() => router.push('/register')}
+            onClick={() => router.push(session ? '/dashboard' : '/register')}
           >
-            Start Learning Free
+            {session ? 'Go to Dashboard' : 'Start Learning Free'}
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
           <Button
