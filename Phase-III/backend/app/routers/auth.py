@@ -21,6 +21,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str
     name: str
+    tier: str = "free"
 
 
 class LoginRequest(BaseModel):
@@ -73,13 +74,19 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     api_key = f"sk_{secrets.token_hex(32)}"
     
     # Create new user
+    tier_enum = UserTier.FREE
+    if request.tier.lower() == "premium":
+        tier_enum = UserTier.PREMIUM
+    elif request.tier.lower() == "pro":
+        tier_enum = UserTier.PRO
+        
     new_user = User(
         email=request.email,
         name=request.name,
         hashed_password=hashed_password,
         password_salt=salt,
         api_key=api_key,
-        tier=UserTier.FREE,
+        tier=tier_enum,
         created_at=datetime.utcnow(),
     )
     

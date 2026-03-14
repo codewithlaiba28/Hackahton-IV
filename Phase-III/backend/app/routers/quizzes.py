@@ -23,6 +23,13 @@ async def get_quiz_questions(
     db: AsyncSession = Depends(get_db)
 ):
     """Get quiz questions for a chapter (WITHOUT answers)."""
+    # Check access (Only premium and pro can take quizzes)
+    if str(current_user.tier) not in ["premium", "pro"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Quizzes are a premium feature. Please upgrade to unlock!"
+        )
+        
     quiz_service = get_quiz_service()
     questions = await quiz_service.get_quiz_questions(chapter_id, db)
     

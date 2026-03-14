@@ -108,10 +108,34 @@ class ProgressService:
         completed = [p for p in all_progress if p.status == "completed"]
         in_progress = [p for p in all_progress if p.status == "in_progress"]
         
-        # Get total accessible chapters
+        # Get total chapters
         total_chapters_result = await db.execute(select(func.count(Chapter.id)))
-        total_chapters = total_chapters_result.scalar()
+        total_chapters = total_chapters_result.scalar() or 0
         
+        # Get best quiz score
+        best_score_result = await db.execute(
+            select(func.max(QuizAttempt.percentage))
+            .where(QuizAttempt.user_id == user_id)
+        )
+        best_score = best_score_result.scalar() or 0
+        
+        # Get daily activity & study time
+        activity_result = await db.execute(
+            select(DailyActivity)
+            .where(DailyActivity.user_id == user_id)
+            .order_by(DailyActivity.activity_date.asc())
+        )
+        activities = activity_result.scalars().all()
+        
+        total_study_time = 0
+        formatted_activity = []
+        for activity in activities:
+            formatted_activity.append({
+                "date": activity.activity_date.isoformat(),
+                "chapters_completed": 0, # Should ideally be calculated per day
+                "study_time": 0 # Should ideally be tracked
+            })
+
         # Calculate streak
         current_streak, longest_streak = await self._calculate_streak(user_id, db)
         
@@ -121,7 +145,11 @@ class ProgressService:
             "overall_percentage": round((len(completed) / total_chapters) * 100, 2) if total_chapters > 0 else 0,
             "current_streak_days": current_streak,
             "longest_streak_days": longest_streak,
-            "last_activity_date": self._get_last_activity_date(all_progress)
+            "total_chapters": total_chapters,
+            "best_quiz_score": float(best_score),
+            "total_study_time": total_study_time,
+            "last_activity_date": self._get_last_activity_date(all_progress),
+            "daily_activity": formatted_activity
         }
     
     async def _calculate_streak(self, user_id: uuid.UUID, db: AsyncSession) -> Tuple[int, int]:

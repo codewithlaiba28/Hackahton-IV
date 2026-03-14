@@ -25,7 +25,7 @@ async def get_current_user_info(current_user: User = Depends(get_current_user)):
     return APIResponse(data=UserResponse(
         id=str(current_user.id),
         email=current_user.email,
-        tier=current_user.tier.value
+        tier=str(current_user.tier)
     ))
 
 
@@ -75,7 +75,7 @@ async def get_cost_summary(
         func.count(LLMUsage.id).label("total_calls")
     ).where(
         LLMUsage.user_id == current_user.id,
-        func.date_trunc("month", LLMUsage.created_at) == func.date_trunc("month", datetime.utcnow())
+        func.strftime("%Y-%m", LLMUsage.created_at) == current_month
     )
     
     result = await db.execute(stmt)
@@ -91,7 +91,7 @@ async def get_cost_summary(
         func.count(LLMUsage.id).label("feature_calls")
     ).where(
         LLMUsage.user_id == current_user.id,
-        func.date_trunc("month", LLMUsage.created_at) == func.date_trunc("month", datetime.utcnow())
+        func.strftime("%Y-%m", LLMUsage.created_at) == current_month
     ).group_by(LLMUsage.feature_name)
     
     feature_result = await db.execute(feature_stmt)
@@ -123,3 +123,20 @@ async def get_cost_summary(
             "warning": "Approaching monthly limit" if remaining < monthly_cap * Decimal("0.2") else None
         }
     )
+
+
+@router.post("/me/upgrade", response_model=APIResponse[UserResponse])
+async def upgrade_tier(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Upgrade the current user to PREMIUM tier."""
+    current_user.tier = UserTier.PREMIUM
+    await db.commit()
+    await db.refresh(current_user)
+    
+    return APIResponse(data=UserResponse(
+        id=str(current_user.id),
+        email=current_user.email,
+        tier=current_user.tier.value
+    ))

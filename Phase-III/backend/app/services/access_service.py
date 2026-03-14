@@ -38,7 +38,7 @@ class AccessService:
             AccessResult with access decision
         """
         # Premium/Pro users can access everything
-        if user.tier.value in ["premium", "pro"]:
+        if str(user.tier) in ["premium", "pro"]:
             return AccessResult(
                 has_access=True,
                 reason="Premium user",
@@ -62,7 +62,7 @@ class AccessService:
     
     def is_free_tier(self, user: User) -> bool:
         """Check if user is on free tier."""
-        return user.tier.value == "free"
+        return str(user.tier) == "free"
 
 
 # Singleton instance
