@@ -106,40 +106,40 @@ Access API docs at: http://localhost:8000/docs
 | GET | `/access/check` | F6 | Check access |
 | GET | `/users/me` | F6 | Get current user |
 
-## 🌐 Web Frontend
+## 🌐 Web Frontend (Phase 3)
 
-A comprehensive, production-ready web frontend with all 6 Phase 1 features.
+A professional, standalone Next.js web application implementing all features from Phases 1 and 2 with custom branding and enhanced UX.
 
-**Location:** [`frontend/index.html`](frontend/index.html)
+**Location:** `frontend/`
 
 ### Features
 
 | Feature | Description | Status |
 |---------|-------------|--------|
-| 📚 Chapters | Rich chapter cards with metadata, markdown rendering | ✅ |
-| 📊 Progress | Dashboard with stats, streaks, progress bars | ✅ |
-| 📝 Quiz | Interactive quiz with instant feedback | ✅ |
-| 🔍 Search | Full-text search across content | ✅ |
-| 🎨 UI | Responsive design, modern gradient theme | ✅ |
-| 🔒 Freemium | Visual locked chapters, upgrade prompts | ✅ |
+| 📚 Chapters | Rich markdown rendering with code highlighting | ✅ |
+| 📊 Progress | Dynamic dashboard with completion tracking | ✅ |
+| 📝 Quiz | Interactive rule-based testing | ✅ |
+| 🧠 Assessments | LLM-Graded conceptual testing (Premium/Pro) | ✅ |
+| 🗺️ Adaptive Path | AI-generated study recommendations (Premium/Pro) | ✅ |
+| 🔒 Freemium | Tier-based access control and upgrade flows | ✅ |
 
 ### Quick Start
 
 ```bash
 cd frontend
-python -m http.server 3000
+npm install
+npm run dev
 # Open http://localhost:3000
 ```
 
 ### Configuration
 
-Update API settings in `index.html`:
-```javascript
-const API_URL = "http://127.0.0.1:8000";
-const API_KEY = "test_api_key_12345";
+Create `.env.local` in the `frontend` directory:
+```bash
+NEXT_PUBLIC_API_URL="http://localhost:8000"
 ```
 
-**Documentation:** See [`frontend/README.md`](frontend/README.md) for complete guide.
+**Documentation:** See [`frontend/README.md`](frontend/README.md) for the complete developer guide.
 
 ---
 
