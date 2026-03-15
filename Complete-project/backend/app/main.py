@@ -44,7 +44,10 @@ if settings.APP_ENV == "development":
         "http://localhost:8000"
     ]
 else:
-    allow_origins = [settings.CHATGPT_APP_ORIGIN]
+    allow_origins = [
+        settings.CHATGPT_APP_ORIGIN,
+        "https://hackahton-iv-frontend.vercel.app"
+    ]
 
 app.add_middleware(
     CORSMiddleware,
