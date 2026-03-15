@@ -1,0 +1,811 @@
+openapi: 3.1.0
+info:
+  title: Course Companion FTE API
+  description: |
+    Zero-Backend-LLM Educational Tutor API for AI Agent Development
+    
+    This API provides deterministic backend services for the Course Companion FTE.
+    All intelligence (explanations, tutoring, encouragement) is handled by ChatGPT.
+    The backend only serves content, tracks progress, grades quizzes, and enforces access.
+  version: 0.1.0
+servers:
+  - url: https://api.coursecompanion.dev/v1
+    description: Production server
+  - url: http://localhost:8000
+    description: Local development server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for user authentication
+  
+  schemas:
+    # Common
+    APIResponse:
+      type: object
+      properties:
+        data: {}
+        error:
+          type: object
+          nullable: true
+        meta:
+          type: object
+          properties:
+            timestamp:
+              type: string
+              format: date-time
+            request_id:
+              type: string
+    
+    # Chapter schemas
+    ChapterMeta:
+      type: object
+      properties:
+        id:
+          type: string
+          example: "ch-001"
+        title:
+          type: string
+          example: "Introduction to AI Agents"
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        estimated_read_min:
+          type: integer
+          example: 15
+        is_free:
+          type: boolean
+        is_locked:
+          type: boolean
+          description: "True if user cannot access this chapter"
+        sequence_order:
+          type: integer
+        prev_chapter_id:
+          type: string
+          nullable: true
+        next_chapter_id:
+          type: string
+          nullable: true
+    
+    ChapterDetail:
+      allOf:
+        - $ref: '#/components/schemas/ChapterMeta'
+        - type: object
+          properties:
+            content:
+              type: string
+              description: "Raw Markdown content from Cloudflare R2"
+    
+    # Quiz schemas
+    QuizQuestion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        question_text:
+          type: string
+        question_type:
+          type: string
+          enum: [mcq, true_false]
+        options:
+          type: array
+          items:
+            type: string
+          nullable: true
+          description: "Options for MCQ questions"
+        sequence_order:
+          type: integer
+    
+    QuizSubmission:
+      type: object
+      properties:
+        answers:
+          type: array
+          items:
+            type: object
+            properties:
+              question_id:
+                type: string
+                format: uuid
+              answer:
+                type: string
+                description: "User's answer text"
+    
+    QuizResult:
+      type: object
+      properties:
+        score:
+          type: integer
+        total:
+          type: integer
+        percentage:
+          type: number
+          format: float
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              question_id:
+                type: string
+              correct:
+                type: boolean
+              correct_answer:
+                type: string
+              explanation:
+                type: string
+                nullable: true
+    
+    # Progress schemas
+    ProgressSummary:
+      type: object
+      properties:
+        chapters_completed:
+          type: array
+          items:
+            type: string
+        chapters_in_progress:
+          type: array
+          items:
+            type: string
+        overall_percentage:
+          type: number
+          format: float
+        current_streak_days:
+          type: integer
+        longest_streak_days:
+          type: integer
+        last_activity_date:
+          type: string
+          format: date
+          nullable: true
+    
+    # User schemas
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        tier:
+          type: string
+          enum: [free, premium, pro]
+    
+    AccessCheckResponse:
+      type: object
+      properties:
+        has_access:
+          type: boolean
+        reason:
+          type: string
+        upgrade_required:
+          type: boolean
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Check if API is healthy (no authentication required)
+      security: []
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  environment:
+                    type: string
+  
+  /chapters:
+    get:
+      summary: List all chapters
+      description: Get metadata for all chapters (content not included)
+      responses:
+        '200':
+          description: List of chapters
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          chapters:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ChapterMeta'
+  
+  /chapters/{chapter_id}:
+    get:
+      summary: Get chapter content
+      description: Get full chapter content from Cloudflare R2
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "ch-001"
+      responses:
+        '200':
+          description: Chapter content
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChapterDetail'
+        '403':
+          description: Access denied (freemium gate)
+        '404':
+          description: Chapter not found
+  
+  /chapters/{chapter_id}/next:
+    get:
+      summary: Get next chapter
+      description: Get metadata for the next chapter in sequence
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Next chapter metadata
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ChapterMeta'
+                        nullable: true
+  
+  /chapters/{chapter_id}/prev:
+    get:
+      summary: Get previous chapter
+      description: Get metadata for the previous chapter in sequence
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Previous chapter metadata
+  
+  /quizzes/{chapter_id}:
+    get:
+      summary: Get quiz questions
+      description: Get quiz questions for a chapter (WITHOUT correct answers)
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Quiz questions
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/QuizQuestion'
+  
+  /quizzes/{chapter_id}/submit:
+    post:
+      summary: Submit quiz answers
+      description: Submit quiz answers and get graded results (rule-based grading)
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QuizSubmission'
+      responses:
+        '200':
+          description: Graded quiz results
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/QuizResult'
+  
+  /progress/{user_id}:
+    get:
+      summary: Get user progress
+      description: Get complete progress summary for a user
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Progress summary
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ProgressSummary'
+        '403':
+          description: Cannot access another user's progress
+  
+  /progress/{user_id}/chapter/{chapter_id}:
+    put:
+      summary: Update chapter progress
+      description: Mark a chapter as in_progress or completed
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [not_started, in_progress, completed]
+      responses:
+        '200':
+          description: Progress updated
+  
+  /access/check:
+    get:
+      summary: Check access rights
+      description: Check if user has access to a resource
+      parameters:
+        - name: resource_type
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "chapter"
+        - name: resource_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Access check result
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/AccessCheckResponse'
+  
+  /users/me:
+    get:
+      summary: Get current user
+      description: Get current authenticated user information
+      responses:
+        '200':
+          description: User information
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/APIResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserResponse'
+  
+  /search:
+    get:
+      summary: Search content
+      description: Search course content using full-text search
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query
+          schema:
+            type: string
+        - name: chapter_id
+          in: query
+          required: false
+          description: Limit search to specific chapter
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Search results (up to 5 relevant sections)
+
+  # ===========================================
+  # PHASE 2: HYBRID INTELLIGENCE ENDPOINTS
+  # ===========================================
+  # These endpoints use LLM calls (Premium/Pro tier only)
+  # All Phase 2 endpoints are under /api/v2/ prefix
+
+  /api/v2/adaptive/learning-path:
+    post:
+      summary: Generate Personalized Learning Path (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Generate a personalized learning path using AI analysis of:
+        - Quiz performance
+        - Learning patterns
+        - Knowledge gaps
+        - Optimal review timing
+
+        **Cost:** Included in Premium/Pro tier ($2-$5 monthly LLM budget)
+
+        **Triggers:**
+        - Student asks "What should I study next?"
+        - Student requests "Give me a study plan"
+        - Student asks "What's next for me?"
+
+        **Constitutional Compliance:**
+        - Premium-gated (Principle VIII)
+        - User-initiated (Principle VIII)
+        - Cost-tracked (Principle X)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                include_review:
+                  type: boolean
+                  description: Include review of weak areas
+      responses:
+        '200':
+          description: Personalized learning path generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      recommended_chapters:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            chapter_id:
+                              type: string
+                            priority:
+                              type: integer
+                            reason:
+                              type: string
+                            estimated_time_min:
+                              type: integer
+                      weak_areas:
+                        type: array
+                        items:
+                          type: string
+                      strengths:
+                        type: array
+                        items:
+                          type: string
+                      overall_assessment:
+                        type: string
+                      suggested_daily_minutes:
+                        type: integer
+                  meta:
+                    type: object
+                    properties:
+                      llm_call:
+                        type: boolean
+                      cached:
+                        type: boolean
+        '403':
+          description: Free tier - upgrade required
+        '503':
+          description: LLM service unavailable (fallback to cached)
+
+    get:
+      summary: Get Latest Cached Learning Path (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Get the most recently generated learning path without triggering a new LLM call.
+        Returns null if no previous recommendation exists.
+
+        **Cost:** $0 (cached result)
+      responses:
+        '200':
+          description: Cached recommendation or null
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    nullable: true
+
+  /api/v2/assessments/{chapter_id}/questions:
+    get:
+      summary: Get Assessment Questions (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Get open-ended assessment questions for a chapter.
+
+        **CRITICAL:** Does NOT include model_answer_criteria
+
+        **Triggers:**
+        - Student asks "Test my understanding"
+        - Student requests "I want a written test"
+        - Student asks "Give me assessment questions"
+
+        **Constitutional Compliance:**
+        - Premium-gated (Principle VIII)
+        - No criteria leak (security guard)
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of assessment questions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          format: uuid
+                        question_text:
+                          type: string
+                        difficulty:
+                          type: string
+                          enum: [conceptual, analytical, applied]
+                  meta:
+                    type: object
+                    properties:
+                      criteria_exposed:
+                        type: boolean
+                        description: Always false (security)
+        '403':
+          description: Free tier - upgrade required
+
+  /api/v2/assessments/{chapter_id}/submit:
+    post:
+      summary: Submit Answer for LLM Grading (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Submit a written answer for LLM grading.
+
+        **Requirements:**
+        - Answer must be 20-500 words
+        - Premium/Pro tier only
+
+        **Returns:**
+        - Score (0-100)
+        - Grade (A/B/C/D/F)
+        - Detailed feedback
+        - Improvement suggestions
+
+        **Cost:** Included in Premium/Pro tier ($2-$5 monthly LLM budget)
+
+        **Constitutional Compliance:**
+        - Premium-gated (Principle VIII)
+        - User-initiated (explicit submission)
+        - Cost-tracked (Principle X)
+        - Word count validated (no wasted tokens)
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                question_id:
+                  type: string
+                  format: uuid
+                answer_text:
+                  type: string
+                  description: Student's written answer (20-500 words)
+      responses:
+        '200':
+          description: Graded assessment with feedback
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      score:
+                        type: integer
+                        minimum: 0
+                        maximum: 100
+                      grade:
+                        type: string
+                        enum: [A, B, C, D, F]
+                      feedback:
+                        type: string
+                      correct_concepts:
+                        type: array
+                        items:
+                          type: string
+                      missing_concepts:
+                        type: array
+                        items:
+                          type: string
+                      improvement_suggestions:
+                        type: string
+                      word_count:
+                        type: integer
+                  meta:
+                    type: object
+                    properties:
+                      llm_call:
+                        type: boolean
+        '403':
+          description: Free tier - upgrade required
+        '422':
+          description: Invalid word count (must be 20-500 words)
+
+  /api/v2/assessments/{chapter_id}/results:
+    get:
+      summary: Get Assessment Results (Phase 2 - Premium Only)
+      description: |
+        **HYBRID FEATURE - Premium/Pro Tier Only**
+
+        Get past assessment results for a chapter.
+        Returns cached results (no LLM call).
+
+        **Cost:** $0 (cached result)
+      parameters:
+        - name: chapter_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of past assessment results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        question_id:
+                          type: string
+                        score:
+                          type: integer
+                        grade:
+                          type: string
+                        feedback:
+                          type: string
+                        submitted_at:
+                          type: string
+                          format: date-time
+
+  /api/v2/users/me/cost-summary:
+    get:
+      summary: Get Monthly Cost Summary (All Tiers)
+      description: |
+        **TRANSPARENCY FEATURE - Available to All Tiers**
+
+        Get breakdown of LLM costs for the current month.
+        Free users see $0.00 (they cannot access hybrid features).
+
+        **Purpose:** Cost transparency for premium users
+      responses:
+        '200':
+          description: Monthly cost breakdown
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      month:
+                        type: string
+                        format: date
+                      total_cost_usd:
+                        type: number
+                        format: float
+                      breakdown:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            feature_name:
+                              type: string
+                            calls:
+                              type: integer
+                            cost_usd:
+                              type: number
+                              format: float
+                      monthly_cap:
+                        type: number
+                        format: float
+                        description: $2 for Premium, $5 for Pro
+                      remaining_budget:
+                        type: number
+                        format: float

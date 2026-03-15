@@ -1,0 +1,15 @@
+{
+  "chapter_id": "ch-004",
+  "questions": [
+    {
+      "question_text": "What are Agent Skills and why are they critical for building effective educational AI agents? Describe the key components of a well-designed skill and explain how skills differ from simple prompts.",
+      "model_answer_criteria": "Must include: 1) Definition of Agent Skills as procedural knowledge containers. 2) Explanation of how skills ensure consistent, repeatable behavior. 3) Description of key components (trigger keywords, workflow steps, response templates, principles). 4) Clear distinction between skills (structured, procedural) and prompts (one-off requests). 5) Example of how skills improve educational outcomes.",
+      "difficulty": "conceptual"
+    },
+    {
+      "question_text": "You are designing a 'debugging-tutor' skill for teaching Python debugging. Outline the skill structure including: trigger keywords, workflow steps, response templates, and key principles. Explain your design decisions.",
+      "model_answer_criteria": "Must include: 1) Appropriate trigger keywords (e.g., 'debug', 'error', 'not working'). 2) Step-by-step workflow (identify error, explain cause, guide fix, verify solution). 3) At least 2 response templates with examples. 4) Key principles (e.g., don't give direct answers, encourage systematic thinking). 5) Justification for each design choice based on educational best practices.",
+      "difficulty": "applied"
+    }
+  ]
+}
