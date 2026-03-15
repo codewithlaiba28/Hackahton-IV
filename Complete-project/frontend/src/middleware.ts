@@ -1,4 +1,4 @@
-import authConfig from './lib/auth';
+import authConfig from '@/lib/auth';
 import NextAuth from 'next-auth';
 import { NextResponse } from 'next/server';
 
@@ -12,13 +12,13 @@ export default auth((req) => {
   const isOnProgress = req.nextUrl.pathname.startsWith('/progress');
   const isOnSettings = req.nextUrl.pathname.startsWith('/settings');
   const isOnLearningPath = req.nextUrl.pathname.startsWith('/learning-path');
-  
+
   const isProtectedRoute = isOnDashboard || isOnCourse || isOnProgress || isOnSettings || isOnLearningPath;
-  
+
   if (isProtectedRoute && !isLoggedIn) {
     return NextResponse.redirect(new URL('/login', req.url));
   }
-  
+
   return NextResponse.next();
 });
 
