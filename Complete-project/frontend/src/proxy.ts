@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 // Extend authConfig with middleware-specific config
 const { auth } = NextAuth(authConfig);
 
-export default auth((req) => {
+export const proxy = auth((req) => {
   const isLoggedIn = !!req.auth;
   const isOnDashboard = req.nextUrl.pathname.startsWith('/dashboard');
   const isOnCourse = req.nextUrl.pathname.startsWith('/course');
