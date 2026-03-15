@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@/*": [
+                "./Complete-project/frontend/src/*"
+            ]
+        }
+    }
+}
