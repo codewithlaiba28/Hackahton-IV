@@ -18,7 +18,7 @@ reg_data = json.dumps({
 }).encode('utf-8')
 
 reg_req = urllib.request.Request(
-    "http://localhost:8000/auth/register",
+    "http://127.0.0.1:8000/auth/register",
     data=reg_data,
     headers={'Content-Type': 'application/json'}
 )
@@ -34,7 +34,7 @@ try:
     }).encode('utf-8')
 
     login_req = urllib.request.Request(
-        "http://localhost:8000/auth/login",
+        "http://127.0.0.1:8000/auth/login",
         data=login_data,
         headers={'Content-Type': 'application/json'}
     )

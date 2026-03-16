@@ -11,6 +11,7 @@ import hashlib
 
 from app.database import get_db
 from app.models.user import User, UserTier
+from app.schemas.common import APIResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -44,7 +45,7 @@ def hash_password(password: str, salt: str = None) -> tuple[str, str]:
     return hashed, salt
 
 
-@router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=APIResponse[AuthResponse], status_code=status.HTTP_201_CREATED)
 async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db)):
     """
     Register a new user.
@@ -94,15 +95,15 @@ async def register(request: RegisterRequest, db: AsyncSession = Depends(get_db))
     await db.commit()
     await db.refresh(new_user)
     
-    return AuthResponse(
+    return APIResponse(data=AuthResponse(
         user_id=str(new_user.id),
         api_key=new_user.api_key,
         tier=str(new_user.tier),
         name=new_user.name,
-    )
+    ))
 
 
-@router.post("/login", response_model=AuthResponse)
+@router.post("/login", response_model=APIResponse[AuthResponse])
 async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
     """
     Login with email and password.
@@ -134,9 +135,9 @@ async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)):
             detail="Invalid email or password"
         )
     
-    return AuthResponse(
+    return APIResponse(data=AuthResponse(
         user_id=str(user.id),
         api_key=user.api_key,
         tier=str(user.tier),
         name=user.name,
-    )
+    ))
