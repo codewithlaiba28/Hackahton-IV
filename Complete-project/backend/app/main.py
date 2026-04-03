@@ -46,7 +46,8 @@ if settings.APP_ENV == "development":
 else:
     allow_origins = [
         settings.CHATGPT_APP_ORIGIN,
-        "https://hackahton-iv-frontend.vercel.app"
+        "https://hackahton-iv-frontend.vercel.app",
+        "https://hackahton-iv-laiba.vercel.app" # Added user's potential domain
     ]
 
 app.add_middleware(
@@ -56,6 +57,17 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/", tags=["Health"])
+async def root():
+    """Root endpoint for API health check."""
+    return {
+        "status": "online",
+        "message": "Course Companion API is fully operational",
+        "version": "0.1.0",
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 
 # Health check endpoint (no auth required)
